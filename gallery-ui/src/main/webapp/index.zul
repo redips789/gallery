@@ -38,7 +38,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button sclass="close" ca:data-dismiss="modal" zclass="none">&#xd7;</button>
+                        <button class="close" data-dismiss="modal">&#xd7;</button>
                         <h4>Error</h4>
                     </div>
                     <div class="modal-body">

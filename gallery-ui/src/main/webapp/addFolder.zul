@@ -27,7 +27,7 @@
                                             @save(vm.folderName, before='addFolder')"
                                  tabindex="1" sclass="form-control" id="folderName" placeholder="Folder name"/>
                         <zul:label value="@load(vmsgs[folderName])" sclass="redLabel"/>
-                        <label value="@load(vm.nameAlreadyExists)" sclass="redLabel"/>
+                        <zul:label value="@load(vm.nameAlreadyExists)" sclass="redLabel"/>
                     </div>
                     <div class="form-group col-xs-12">
                         <zul:button label="Add" onClick="@command('addFolder')" sclass="btn btn-default" zclass="none"

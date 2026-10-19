@@ -63,7 +63,7 @@
                     </div>
                     <div class="modal-footer">
                         <div class="col-xs-2">
-                            <button class="btn btn-lg btn-default" zclass="none" data-dismiss="modal">Cancel
+                            <button class="btn btn-lg btn-default" data-dismiss="modal">Cancel
                             </button>
                         </div>
                         <div class="col-xs-10">

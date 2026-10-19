@@ -13,11 +13,11 @@
             <div class="row bottom5">
                 <div class="col-xs-12 text-center">
                     <div class="col-xs-6">
-                        <button label="Previous" zclass="none" onClick="@command('previous')"
+                        <zul:button label="Previous" zclass="none" onClick="@command('previous')"
                                 sclass="btn btn-default" visible="@load(vm.previousButtonVisible)"/>
                     </div>
                     <div class="col-xs-6">
-                        <button label="Next" zclass="none" onClick="@command('next')"
+                        <zul:button label="Next" zclass="none" onClick="@command('next')"
                                 sclass="btn btn-default" visible="@load(vm.nextButtonVisible)"/>
                     </div>
                     <div class="row">

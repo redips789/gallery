@@ -43,7 +43,7 @@
                                      tabindex="5" sclass="form-control" id="imageDescription" placeholder="About..."/>
                             <zul:label value="@load(vmsgs[imageDescription])" sclass="redLabel"/>
                         </div>
-                        <div sclass="col-xs-9">
+                        <div class="col-xs-9">
                             <zul:button label="Submit" onClick="@command('submit')" sclass="btn btn-default" zclass="none"/>
                         </div>
                         <zul:button label="Cancel" onClick="@global-command('selectFolder',folder=vm.selectedImage.folder
