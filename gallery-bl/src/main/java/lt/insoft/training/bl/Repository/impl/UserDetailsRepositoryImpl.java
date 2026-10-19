@@ -42,6 +42,14 @@ public class UserDetailsRepositoryImpl implements UserDetailsRepository, UserDet
         return true;
     }
 
+    @Override
+    public List<lt.insoft.training.model.User> selectUsers() {
+        CriteriaQuery<lt.insoft.training.model.User> cq =
+                entityManager.getCriteriaBuilder().createQuery(lt.insoft.training.model.User.class);
+        cq.select(cq.from(lt.insoft.training.model.User.class));
+        return entityManager.createQuery(cq).getResultList();
+    }
+
     private lt.insoft.training.model.User selectUserByName(String username) {
         CriteriaBuilder qb = entityManager.getCriteriaBuilder();
         CriteriaQuery<lt.insoft.training.model.User> cq = qb.createQuery(lt.insoft.training.model.User.class);

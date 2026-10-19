@@ -44,9 +44,6 @@
         <property name="password" value="${DB_PASSWORD}"></property>
     </bean>
 
-    <bean id="noOpPasswordEncoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
-          factory-method="getInstance"/>
-
     <b:beans xmlns="http://www.springframework.org/schema/security"
              xmlns:b="http://www.springframework.org/schema/beans"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -73,11 +70,10 @@
         </http>
 
         <authentication-manager>
-            <!-- Passwords in POV_USER are stored as plain text. Spring Security 5+ rejects passwords
-                 without an encoder prefix, so plain-text comparison is configured explicitly.
-                 TODO: migrate stored passwords to BCrypt and switch to a BCryptPasswordEncoder. -->
+            <!-- Passwords are BCrypt hashes; see PasswordConfig. Plain-text passwords left from before
+                 are hashed at startup by PasswordMigration. -->
             <authentication-provider user-service-ref='userDetailsRepositoryImpl'>
-                <password-encoder ref="noOpPasswordEncoder"/>
+                <password-encoder ref="passwordEncoder"/>
             </authentication-provider>
         </authentication-manager>
     </b:beans>

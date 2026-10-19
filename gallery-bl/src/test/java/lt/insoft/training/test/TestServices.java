@@ -2,6 +2,7 @@ package lt.insoft.training.test;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lt.insoft.training.bl.Repository.UserDetailsRepository;
 import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.bl.Service.UserService;
@@ -15,9 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Propagation;
@@ -48,6 +54,12 @@ public class TestServices {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private UserDetailsRepository userDetailsRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private DataSource dataSource;
@@ -153,11 +165,15 @@ public class TestServices {
 
     @Test
     public void testAddUser() {
-        Assertions.assertTrue(userService.addUser(new User("user", "password")));
+        User user = new User("user", "password");
+        Assertions.assertTrue(userService.addUser(user));
+        // the caller's object keeps the plain-text password
+        Assertions.assertEquals("password", user.getPassword());
         flushAndClear();
         UserDetails userDetails = userDetailsService.loadUserByUsername("user");
         Assertions.assertEquals("user", userDetails.getUsername());
-        Assertions.assertEquals("password", userDetails.getPassword());
+        Assertions.assertTrue(userDetails.getPassword().startsWith("{bcrypt}$2"));
+        Assertions.assertTrue(passwordEncoder.matches("password", userDetails.getPassword()));
         Assertions.assertEquals(List.of("ROLE_USER"),
                 userDetails.getAuthorities().stream().map(Object::toString).toList());
     }
@@ -167,7 +183,51 @@ public class TestServices {
         Assertions.assertTrue(userService.addUser(new User("user", "password")));
         Assertions.assertFalse(userService.addUser(new User("user", "other")));
         flushAndClear();
-        Assertions.assertEquals("password", userDetailsService.loadUserByUsername("user").getPassword());
+        Assertions.assertTrue(passwordEncoder.matches("password",
+                userDetailsService.loadUserByUsername("user").getPassword()));
+    }
+
+    @Test
+    public void testLogin() {
+        userService.addUser(new User("user", "password"));
+        flushAndClear();
+        // the same provider setup as <authentication-provider> in applicationContext.xml
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        Authentication result = provider.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated("user", "password"));
+        Assertions.assertTrue(result.isAuthenticated());
+        Assertions.assertThrows(BadCredentialsException.class, () -> provider.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated("user", "wrong")));
+    }
+
+    @Test
+    public void testEncodePlainTextPasswords() {
+        // stored straight through the repository, as passwords were before BCrypt
+        userDetailsRepository.addUser(new User("legacy", "secret"));
+        userService.addUser(new User("current", "password"));
+        flushAndClear();
+        String currentHash = userDetailsService.loadUserByUsername("current").getPassword();
+
+        Assertions.assertEquals(1, userService.encodePlainTextPasswords());
+        flushAndClear();
+        String legacyHash = userDetailsService.loadUserByUsername("legacy").getPassword();
+        Assertions.assertTrue(legacyHash.startsWith("{bcrypt}"));
+        Assertions.assertTrue(passwordEncoder.matches("secret", legacyHash));
+        // already-hashed passwords are left alone, and running it again changes nothing
+        Assertions.assertEquals(currentHash, userDetailsService.loadUserByUsername("current").getPassword());
+        Assertions.assertEquals(0, userService.encodePlainTextPasswords());
+    }
+
+    @Test
+    public void testPlainTextPasswordIsRejected() {
+        // a password that was never hashed must not be accepted as is
+        userDetailsRepository.addUser(new User("legacy", "secret"));
+        flushAndClear();
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        Assertions.assertThrows(BadCredentialsException.class, () -> provider.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated("legacy", "secret")));
     }
 
     @Test
