@@ -15,7 +15,7 @@ public class Folder {
     @Column(name="ID")
     private Long id;
 
-    @Column(name="NAME")
+    @Column(name="NAME", unique = true)
     private String folderName;
 
     @Column(name="INSERT_DATE")
