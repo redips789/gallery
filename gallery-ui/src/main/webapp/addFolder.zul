@@ -1,0 +1,42 @@
+<zk xmlns="native" xmlns:zul="zul" xmlns:x="xhtml" xmlns:zk="zk">
+    <x:div apply="org.zkoss.bind.BindComposer"
+           viewModel="@id('vm')@init('lt.insoft.training.ui.vm.FolderVM')" validationMessages="@id('vmsgs')">
+        <div class="container">
+            <div class="row top30">
+                <div class="col-sm-12 text-center">
+                    <zul:div if="${!vm.editFolder}">
+                        <h1>Add Folder</h1>
+                    </zul:div>
+                    <zul:div if="${vm.editFolder}">
+                        <h1>Edit Folder</h1>
+                    </zul:div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-offset-3 col-md-6 col-xs-12 col-sm-8 col-sm-offset-2 col-lg-offset-4">
+                <x:form>
+                    <div class="form-group col-xs-12">
+                        <zul:image
+                                content="@load(vm.folderImage)
+                                @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                sclass="img-thumbnail"/>
+                    </div>
+                    <div class="form-group col-xs-12">
+                        <label>Name<span class="redLabel">*</span>:
+                        </label>
+                        <zul:textbox value="@bind(vm.selectedFolder.folderName) @validator(vm.nameValidator)
+                                            @save(vm.folderName, before='addFolder')"
+                                 tabindex="1" sclass="form-control" id="folderName" placeholder="Folder name"/>
+                        <zul:label value="@load(vmsgs[folderName])" sclass="redLabel"/>
+                        <label value="@load(vm.nameAlreadyExists)" sclass="redLabel"/>
+                    </div>
+                    <div class="form-group col-xs-12">
+                        <zul:button label="Add" onClick="@command('addFolder')" sclass="btn btn-default" zclass="none"
+                                if="${!vm.editFolder}"/>
+                        <zul:button label="Edit" onClick="@command('editFolder')" sclass="btn btn-default" zclass="none"
+                                if="${vm.editFolder}"/>
+                    </div>
+                </x:form>
+            </div>
+        </div>
+    </x:div>
+</zk>

@@ -1,0 +1,79 @@
+<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+    <div class="container">
+        <div class="row bottom5 top60">
+            <div class="col-xs-12 text-center">
+                <div class="col-xs-6">
+                    <zul:button label="Previous" zclass="none" onClick="@command('previous')" sclass="btn btn-default"
+                            visible="@load(vm.previousButtonVisible)"/>
+                </div>
+                <div class="col-xs-6">
+                    <zul:button label="Next" zclass="none" onClick="@command('next')" sclass="btn btn-default"
+                            visible="@load(vm.nextButtonVisible)"/>
+                </div>
+
+                <br></br>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <zul:button sclass="btn btn-default btn-lg" zclass="none"
+                                label="Add" iconSclass="glyphicon glyphicon-plus"
+                                onClick="@global-command('changePage', page='addFolder.zul')"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <x:div children="@load(vm.folders) @template('loadFolders')">
+                <zul:template name="loadFolders" var="x">
+                    <zul:div sclass="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                        <div class="thumbnail">
+                            <zul:button iconSclass="glyphicon glyphicon-trash" sclass="btn btn-sample
+                              btn-lg pull-right" zclass="none"
+                                    ca:data-toggle="modal" ca:data-target="#confirm-delete"
+                                    onClick="@command('selectFolderToDelete', folder=x)"/>
+                            <zul:button iconSclass="glyphicon glyphicon-pencil" sclass="btn btn-sample btn-lg pull-right"
+                                    zclass="none"
+                                    onClick="@global-command('selectFolder', folder=x, page='addFolder.zul')"></zul:button>
+                            <zul:image content="@load(vm.folderImage)
+                                                @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                   sclass="img-responsive"
+                                   onClick="@global-command('selectFolder',folder=x, page='folder.zul')"/>
+                            <div class="caption">
+                                <zul:label value="@load(x.folderName)"/>
+                            </div>
+                        </div>
+                        <!--<button label="edit" zclass="none" sclass="btn btn-lg btn-default"-->
+                        <!--onClick="@global-command('selectFolder', folder=x, page='addFolder.zul')"/>-->
+                        <!--<button label="delete" zclass="none" sclass="btn btn-danger btn-lg  btn-default"-->
+                        <!--ca:data-toggle="modal" ca:data-target="#confirm-delete"-->
+                        <!--onClick="@command('selectFolderToDelete', folder=x)"/>-->
+                    </zul:div>
+                </zul:template>
+            </x:div>
+        </div>
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog"
+               aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <zul:button sclass="close" ca:data-dismiss="modal" zclass="none">&#xd7;</zul:button>
+                        <h4>Delete Picture</h4>
+                    </div>
+                    <div class="modal-body">
+                        <zul:label value="Are you sure you want to delete this folder?"/>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-xs-2">
+                            <button class="btn btn-lg btn-default" zclass="none" data-dismiss="modal">Cancel
+                            </button>
+                        </div>
+                        <div class="col-xs-10">
+                            <zul:button sclass="btn btn-lg btn-danger btn-ok" zclass="none" ca:data-dismiss="modal"
+                                    onClick="@command('deleteFolder')"
+                                    label="Delete"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</zk>

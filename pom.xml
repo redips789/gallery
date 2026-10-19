@@ -1,0 +1,348 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>lt.insoft.training</groupId>
+    <artifactId>gallery-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <zk.version>8.0.2.2</zk.version>
+        <commons-io>2.4</commons-io>
+        <spring.version>4.3.6.RELEASE</spring.version>
+        <junit.version>3.8.1</junit.version>
+        <commons.logging>1.2</commons.logging>
+        <oracle.version>11.2.0.3</oracle.version>
+        <commons-dbcp.version>1.4</commons-dbcp.version>                     <!--database connection pooling library -->
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <hibernate.jpa.version>1.0.0.Final</hibernate.jpa.version>
+        <commonslang.version>2.4</commonslang.version>
+        <hibernate.version>5.2.7.Final</hibernate.version>
+        <compilerSourceTarget.version>1.8</compilerSourceTarget.version>
+        <img-scarl.version>4.2</img-scarl.version>
+        <url-rewrite-filter>4.0.3</url-rewrite-filter>
+    </properties>
+
+    <modules>
+        <module>gallery-ui</module>
+        <module>gallery-model</module>
+        <module>gallery-bl</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>ZK CE</id>
+            <name>ZK CE Repository</name>
+            <url>http://mavensync.zkoss.org/maven2</url>
+        </repository>
+        <repository>
+            <id>codelds</id>
+            <url>https://code.lds.org/nexus/content/groups/main-repo</url>
+        </repository>
+        <!--<repository>-->
+            <!--<id>codelds</id>-->
+            <!--<url>https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j</url>-->
+        <!--</repository>-->
+        <repository>
+            <id>local-maven-repo</id>
+            <url>C:\dev\workspace\paging\target</url>
+        </repository>
+
+        <repository>
+            <id>maven.oracle.com</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://maven.oracle.com</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>zkmaven</id>
+            <name>ZK Maven Plugin Repository</name>
+            <url>http://mavensync.zkoss.org/maven2</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>maven.oracle.com</id>
+            <url>https://maven.oracle.com</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencyManagement>                                  <!-- will only be included in the child module if
+                                                             they were also specified in the <dependencies> -->
+        <dependencies>                                      <!--  section will ALWAYS be included as a dependency -->
+
+            <!--Junit -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>               <!--A unit testing framework -->
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- ZK -->
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zkbind</artifactId>              <!--  synchronizing data between the View and ViewModel -->
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zul</artifactId>                 <!--  an XML-formatted and easy-to read language,  is used to describe ui  -->
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zkplus</artifactId>              <!-- additional features -->
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zhtml</artifactId>                <!-- xhtml and zhtml -->
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zk</artifactId>
+                <version>${zk.version}</version>
+            </dependency>
+            <!-- commons-io -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>           <!-- is a library of utilities to assist with developing
+                                                              IO functionality -->
+                <version>${commons-io}</version>
+            </dependency>
+
+            <!-- commons-logging -->
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>      <!-- spring core depends -->
+                <version>${commons.logging}</version>
+            </dependency>
+
+            <!--    Spring -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>          <!-- provide the fundamental parts of the framework -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>         <!-- provide the fundamental parts of the framework -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>            <!-- basic web-oriented integration features -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>  <!-- adds support for internationalization (using, for example,
+                                                           resource bundles), event propagation, resource loading -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>      <!--supports unit testing -->
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>      <!--transaction -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-orm</artifactId>      <!--object relational mapping -->
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <!-- oracle -->
+            <dependency>
+                <groupId>com.oracle</groupId>
+                <artifactId>ojdbc6</artifactId>
+                <version>${oracle.version}</version>
+            </dependency>
+
+            <!-- jpa -->
+            <dependency>
+                <groupId>org.hibernate.javax.persistence</groupId>
+                <artifactId>hibernate-jpa-2.1-api</artifactId>
+                <version>${hibernate.jpa.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-jpamodelgen</artifactId>
+                <version>${hibernate.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commonslang.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-dbcp</groupId>
+                <artifactId>commons-dbcp</artifactId>
+                <version>${commons-dbcp.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zkmax</artifactId>
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.zkoss.zk</groupId>
+                <artifactId>zuti</artifactId>
+                <version>${zk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.imgscalr</groupId>
+                <artifactId>imgscalr-lib</artifactId>
+                <version>${img-scarl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.tuckey</groupId>
+                <artifactId>urlrewritefilter</artifactId>
+                <version>${url-rewrite-filter}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.0.1</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>lt.insoft.training</groupId>
+                <artifactId>paging</artifactId>
+                <version>1.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.oracle.jdbc</groupId>
+                <artifactId>ojdbc7</artifactId>
+                <version>12.1.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.194</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>4.2.2.RELEASE</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>4.2.2.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>4.3.5.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.apache.logging.log4j</groupId>-->
+                <!--<artifactId>log4j</artifactId>-->
+                <!--<version>2.8.1</version>-->
+            <!--</dependency>-->
+        </dependencies>
+    </dependencyManagement>
+
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${compilerSourceTarget.version}</source>
+                        <target>${compilerSourceTarget.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.hibernate.orm.tooling</groupId>
+                    <artifactId>hibernate-enhance-maven-plugin</artifactId>
+                    <version>${hibernate.version}</version>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <failOnError>true</failOnError>
+                                <enableLazyInitialization>true</enableLazyInitialization>
+                            </configuration>
+                            <goals>
+                                <goal>enhance</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.tomcat.maven</groupId>
+                    <artifactId>tomcat7-maven-plugin</artifactId>
+                    <version>2.2</version>
+                    <configuration>
+                        <path>/</path>
+                        <contextFile>src/main/webapp/WEB-INF/config/app-config.xml</contextFile>
+                        <mode>context</mode>
+                        <charset>UTF-8</charset>
+                        <warDirectory>target/${project.artifactId}-${project.version}</warDirectory>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

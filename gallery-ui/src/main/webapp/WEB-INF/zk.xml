@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk>
+    <system-config>
+        <max-upload-size>5000</max-upload-size>
+        <!--<disable-event-thread>false</disable-event-thread>-->
+    </system-config>
+
+    <device-config>
+        <device-type>ajax</device-type>
+        <embed><![CDATA[
+			<script type="text/javascript">
+				zAu.cmd0.showBusy = function () {return false;}
+			</script>
+		]]></embed>
+    </device-config>
+    <!--<error-page>-->
+        <!--<exception-type>org.zkoss.zk.ui.</exception-type>-->
+        <!--<location>/WEB-INF/sys/error.zul</location>-->
+    <!--</error-page>-->
+</zk>

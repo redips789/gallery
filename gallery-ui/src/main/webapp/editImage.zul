@@ -1,0 +1,56 @@
+<zk xmlns="native" xmlns:x="xhtml" xmlns:zul="zul">
+    <x:div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm')@init('lt.insoft.training.ui.vm.EditImageVM')"
+           self="@{define(content)}"
+           validationMessages="@id('vmsgs')">
+        <div class="container">
+            <div class="row top60">
+                <div class="col-sm-12 text-center">
+                    <h1>Picture edit</h1>
+                </div>
+            </div>
+            <div class="row ">
+                <div class="col-lg-4 col-md-offset-4 col-md-4 col-xs-12">
+                    <x:form>
+                        <div class="form-group">
+                            <label>Picture<span class="redLabel">*</span>:
+                            </label>
+                            <br></br>
+                            <zul:image
+                                    content="@load(vm.selectedImage.thumbnail.thumbnail)
+                                @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                    sclass="img-thumbnail" zclass="none"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Name<span class="redLabel">*</span>:
+                            </label>
+                            <zul:textbox value="@bind(vm.selectedImage.imageName) @validator(vm.nameValidator)
+                            @save(vm.selectedImage.imageName, before='submit')"
+                                     tabindex="1" sclass="form-control" id="imageName" placeholder="Picture name"/>
+                            <zul:label value="@load(vmsgs[imageName])" sclass="redLabel"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Tags:</label>
+                            <zul:textbox value="@bind(vm.tags) @validator(vm.imageTagsValidator)
+                            @save(vm.tags, before='submit')"
+                                     tabindex="4" sclass="form-control" id="editImageTags" placeholder="tag1,tag2"/>
+                            <zul:label value="@load(vmsgs[editImageTags])" sclass="redLabel"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Descriptio</label>
+                            <zul:textbox rows="5" value="@bind(vm.selectedImage.description)
+                                                        @validator(vm.imageDescriptionValidator)
+                                                        @save(vm.selectedImage.description, before='submit')"
+                                     tabindex="5" sclass="form-control" id="imageDescription" placeholder="About..."/>
+                            <zul:label value="@load(vmsgs[imageDescription])" sclass="redLabel"/>
+                        </div>
+                        <div sclass="col-xs-9">
+                            <zul:button label="Submit" onClick="@command('submit')" sclass="btn btn-default" zclass="none"/>
+                        </div>
+                        <zul:button label="Cancel" onClick="@global-command('selectFolder',folder=vm.selectedImage.folder
+                        , page='folder.zul')" sclass="btn btn-default" zclass="none"/>
+                    </x:form>
+                </div>
+            </div>
+        </div>
+    </x:div>
+</zk>

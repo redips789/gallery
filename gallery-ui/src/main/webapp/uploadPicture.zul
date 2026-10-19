@@ -1,0 +1,73 @@
+<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+    <x:div apply="org.zkoss.bind.BindComposer"
+           viewModel="@id('uploadVM')@init('lt.insoft.training.ui.vm.UploadVM')"
+           validationMessages="@id('vmsgs')">
+        <div class="container">
+            <div class="row top30">
+                <div class="col-sm-12 text-center">
+                    <h1>Picture upload</h1>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-offset-4 col-md-4 col-xs-12">
+                <x:form>
+                    <div class="form-group">
+                        <zul:label id="m1" value="@bind(vmsgs[ImageName])"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Picture<span class="redLabel">*</span>:
+                        </label>
+                        <div class="thumbnail">
+                            <zul:image content="@load(uploadVM.uploadedPicture)
+                                                @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                   sclass="img-responsive"/>
+                        </div>
+                        <zul:label value="@load(uploadVM.imageValidationMessage)" sclass="redLabel"/>
+                    </div>
+                    <div class="form-group">
+                        <zul:button label="Upload picture" upload="true"
+                                onUpload="@command('doUploadedPicture', media=event.media)"
+                                sclass="btn btn-default" zclass="none"/>
+                        <zul:separator/>
+                    </div>
+                    <div class="form-group">
+                        <label>Name<span class="redLabel">*</span>:
+                        </label>
+                        <zul:textbox value="@save(uploadVM.imageName) @validator(uploadVM.nameValidator)
+                        @save(uploadVM.imageName, before='submit')"
+                                 tabindex="1" sclass="form-control" id="imageName" placeholder="Picture name"/>
+                        <zul:label value="@load(vmsgs[imageName])" sclass="redLabel"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Insert date:</label>
+                        <zul:textbox value="@load(uploadVM.insertDate)
+                        @converter('lt.insoft.training.ui.vm.util.DateFormatConverter', format='yyyy-MM-dd')"
+                                 disabled="true" tabindex="2" sclass="form-control" id="insertDate"/>
+                        <zul:label value="@load(vmsgs[insertDate])" sclass="redLabel"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Quality:</label>
+                        <zul:textbox value="@load(uploadVM.quality)"
+                                 disabled="true" tabindex="3" sclass="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags:</label>
+                        <zul:textbox value="@save(uploadVM.tags) @validator(uploadVM.imageTagsValidator)
+                        @save(uploadVM.tags, before='submit')" tabindex="4" sclass="form-control" id="imageTags"
+                                 placeholder="tag1,tag2"/>
+                        <zul:label value="@load(vmsgs[imageTags])" sclass="redLabel"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Descriptio</label>
+                        <zul:textbox rows="5" value="@save(uploadVM.description, before='submit')
+                                                        @validator(uploadVM.imageDescriptionValidator)
+                                                        @save(uploadVM.description, before='submit')"
+                                 tabindex="5" sclass="form-control" id="imageDescription" placeholder="About..."/>
+                        <zul:label value="@load(vmsgs[imageDescription])" sclass="redLabel"/>
+                    </div>
+                    <zul:button label="Submit" onClick="@command('submit')"
+                            sclass="btn btn-default" zclass="none"/>
+                </x:form>
+            </div>
+        </div>
+    </x:div>
+</zk>

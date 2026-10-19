@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="lt.insoft.training.bl"/>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation" value="classpath*:META-INF/persistence.xml"/>
+        <property name="persistenceUnitName" value="trainingPersistence"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="showSql" value="true"/>
+                <property name="databasePlatform" value="org.hibernate.dialect.Oracle10gDialect"/>
+            </bean>
+        </property>
+    </bean>
+
+    <!--<bean id="imageRepository" class="lt.insoft.training.bl.Repository.impl.ImageRepositoryImpl"/>-->
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
+        <property name="url" value="jdbc:oracle:thin:@oracle.insoft.dev:1521:dev"></property>
+        <property name="username" value="mokymai"></property>
+        <property name="password" value="insoft_mokymai"></property>
+    </bean>
+
+    <bean id="myUserDetailsService" class="lt.insoft.training.bl.Repository.impl.UserDetailsRepositoryImpl">
+    </bean>
+
+    <b:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:b="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+        <http pattern="/css/**" security="none"/>
+        <http pattern="/js/**" security="none"/>
+        <http auto-config="true">
+            <!-- ZK AU reqeust -->
+
+            <intercept-url pattern="/zkau/**" access="permitAll()"/>
+            <intercept-url pattern="/login.zul*" access="isAnonymous()"/>
+            <!--<intercept-url pattern="/*.zul" access="hasRole('USER'"></intercept-url>-->
+            <!--<intercept-url pattern="/zk/*" access="hasRole('USER'"></intercept-url>-->
+            <intercept-url pattern="/**" access="hasRole('USER')"/>
+            <form-login login-page='/login.zul'
+                        authentication-failure-url="/login.zul?login_error=1"
+                        login-processing-url="/j_spring_security_check"/>
+            <csrf disabled="true"
+            />
+
+            <logout logout-url="/perform_logout"
+                    delete-cookies="JSESSIONID"
+                    invalidate-session="true"
+                    logout-success-url="/login.zul"/>
+        </http>
+
+        <!--<authentication-manager>-->
+            <!--<authentication-provider>-->
+                <!--<user-service>-->
+                    <!--<user name="a" password="a" authorities="ROLE_USER"/>-->
+                <!--</user-service>-->
+            <!--</authentication-provider>-->
+        <!--</authentication-manager>-->
+
+        <authentication-manager>
+            <authentication-provider user-service-ref='myUserDetailsService'/>
+            <!--<authentication-provider user-service-ref='org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl'/>-->
+        </authentication-manager>
+
+        <!--<beans:bean name="bcryptEncoder"-->
+                    <!--class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>-->
+    </b:beans>
+
+</beans>

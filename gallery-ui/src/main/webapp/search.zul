@@ -1,0 +1,82 @@
+<zk xmlns:n="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+    <x:div apply="org.zkoss.bind.BindComposer"
+           viewModel="@id('vm')@init('lt.insoft.training.ui.vm.SearchVM')"
+           validationMessages="@id('vmsgs')">
+        <div class="container">
+            <div class="row top30">
+                <div class="col-sm-12 text-center">
+                    <h1>Search</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-sm-offset-3">
+                    <div id="imaginary_container">
+                        <div class="input-group stylish-input-group">
+                            <zul:textbox type="text" sclass="form-control" placeholder="Search"
+                                         value="@bind(vm.searchInput) @validator(vm.searchValidator)
+                        @save(vm.searchInput, before='search')" tabindex="1" id="searchQuery"/>
+                            <span class="input-group-addon">
+                                <zul:button zclass="none" iconSclass="glyphicon glyphicon-search"
+                                            onClick="@command('search')"/>
+                            </span>
+                        </div>
+                    </div>
+                    <zul:label value="@load(vmsgs[searchQuery])" sclass="redLabel"/>
+                </div>
+            </div>
+            <zul:separator/>
+            <div class="row">
+                <zul:div children="@load(vm.searchResults) @template('loadImages')">
+                    <zul:template name="loadImages" var="x">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                            <div class="thumbnail">
+                                <zul:button iconSclass="glyphicon glyphicon-trash"
+                                            sclass="btn btn-sample btn-lg pull-right"
+                                            zclass="none"
+                                            ca:data-toggle="modal" ca:data-target="#confirm-delete"
+                                            onClick="@command('selectImage', image=x)"/>
+                                <zul:button iconSclass="glyphicon glyphicon-pencil"
+                                            sclass="btn btn-sample btn-lg pull-right"
+                                            zclass="none"
+                                            onClick="@global-command('selectImage', image=x,
+                                                    pageName='editImage.zul')"/>
+                                <zul:separator/>
+                                <zul:image content="@load(x.thumbnail.thumbnail)
+                                               @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                           sclass=" img-responsive"
+                                           onClick="@global-command('selectImage',image=x, pageName='image.zul')"/>
+                            </div>
+                        </div>
+                    </zul:template>
+                </zul:div>
+            </div>
+            <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog"
+                 aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <zul:button sclass="close" ca:data-dismiss="modal" zclass="none">&#xd7;</zul:button>
+                            <h4>Delete Picture</h4>
+                        </div>
+                        <div class="modal-body">
+                            <zul:label value="Are you sure you want to delete this picture?"/>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-xs-2">
+                                <button class="btn btn-default btn-lg" data-dismiss="modal">Cancel</button>
+                            </div>
+                            <div class="col-xs-10">
+                                <zul:button sclass="btn btn-lg btn-danger" zclass="none" ca:data-dismiss="modal"
+                                            onClick="@command('deleteImage')"
+                                            label="Delete"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <zul:myPaging id="myComp" totalSize="21" pageSize="5" activePage="@save(vm.activePage)"/>
+            <zul:paging id="paging" totalSize="21" pageSize="5" activePage="@save(vm.activePage)"
+                        zclass="none" sclass="pagination" mold="os"/>
+        </div>
+    </x:div>
+</zk>

@@ -1,0 +1,60 @@
+<zk xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+    <x:div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm')@init('lt.insoft.training.ui.vm.EditImageVM')">
+        <div class="container ">
+            <div class="row top30">
+                <div class="col-sm-12 text-center">
+                    <h1>Picture</h1>
+                </div>
+
+                <x:form>
+                    <div class="for-group">
+                        <div class="col-lg-4 col-md-offset-4  col-md-4 col-xs-12">
+                            <zul:a ca:data-toggle="modal" ca:data-target="#myModal">
+                                <image content="@load(vm.selectedImage.modalImage.image)
+                            @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                                       sclass="img-thumbnail" id="myImg"/>
+                            </zul:a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-offset-4 col-md-4 col-xs-12">
+                        <zul:div sclass="form-group">
+                            <zul:label value="Name:"/>
+                            <zul:textbox value="@load(vm.selectedImage.imageName)" sclass="form-control" disabled="true"/>
+                        </zul:div>
+                        <zul:div sclass="form-group">
+                            <zul:label value="Insert date: "/>
+                            <zul:textbox value="@load(vm.selectedImage.insertDate)
+                                        @converter('lt.insoft.training.ui.vm.util.DateFormatConverter',
+                                        format='yyyy-MM-dd')" sclass="form-control" disabled="true"/>
+                        </zul:div>
+                        <zul:div sclass="form-group">
+                            <zul:label value="Quality:"/>
+                            <zul:textbox value="@load(vm.selectedImage.quality)" sclass="form-control" disabled="true"/>
+                        </zul:div>
+                        <zul:div sclass="form-group">
+                            <zul:label>Tags:</zul:label>
+                            <zul:textbox value="@load(vm.tags)" sclass="form-control" disabled="true"/>
+                        </zul:div>
+                        <zul:div sclass="form-group">
+                            <zul:label>Descriptio</zul:label>
+                            <zul:textbox rows="5" value="@load(vm.selectedImage.description)" sclass="form-control"
+                                     disabled="true"/>
+                        </zul:div>
+
+                        <zul:button label="Back" zclass="none" sclass="btn btn-lg  btn-default"
+                                onClick="@global-command('selectFolder', folder=vm.selectedImage.folder
+                                        , page='folder.zul')"/>
+                    </div>
+                </x:form>
+            </div>
+
+            <div class="modal modalImage" id="myModal">
+                <span class="close" data-dismiss="modal">&#xd7;</span>
+                <zul:image content="@load(vm.selectedImage.image.image)
+                            @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
+                       id="img01" sclass="modal-content img-responsive"/>
+                <zul:div id="caption"></zul:div>
+            </div>
+        </div>
+    </x:div>
+</zk>
