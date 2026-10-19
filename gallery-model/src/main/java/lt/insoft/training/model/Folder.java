@@ -12,7 +12,6 @@ public class Folder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernateSequence")
-    @SequenceGenerator(name = "hibernateSequence", sequenceName = "HIBERNATE_SEQUENCE", allocationSize = 1)
     @Column(name="ID")
     private Long id;
 
