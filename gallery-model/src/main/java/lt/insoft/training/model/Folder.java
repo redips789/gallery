@@ -2,7 +2,6 @@ package lt.insoft.training.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Created by povilas.jegelevicius on 2017-03-01.

@@ -1,11 +1,9 @@
 package lt.insoft.training.model;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Math.toIntExact;
 
 /**
  * Created by povilas.jegelevicius on 2017-02-22.
@@ -46,7 +44,7 @@ public class ImageDetails {
     @ElementCollection
     @CollectionTable(name="POV_TAG",joinColumns = @JoinColumn(name= "IMAGE_DETAILS"))
     @Column(name="NAME")
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "MODAL_IMAGEID")
@@ -155,11 +153,13 @@ public class ImageDetails {
 
         ImageDetails that = (ImageDetails) o;
 
-        return getId().equals(that.getId());
+        // unsaved pictures have no id yet and are only equal to themselves
+        return getId() != null && getId().equals(that.getId());
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(getId());
+        // constant, so the hash doesn't change when the id is assigned on save
+        return ImageDetails.class.hashCode();
     }
 }

@@ -282,6 +282,26 @@ public class TestImageRepository {
         Assertions.assertFalse(imageRepository.deleteImage(new ImageDetails()));
     }
 
+    @Test
+    @Transactional
+    @Rollback
+    public void testImageDetailsEquality() {
+        ImageDetails unsaved = new ImageDetails();
+        Assertions.assertEquals(unsaved, unsaved);
+        Assertions.assertNotEquals(unsaved, new ImageDetails());
+        Set<ImageDetails> set = new HashSet<>();
+        set.add(unsaved);
+        unsaved.setId(42);
+        // still found after the id was assigned
+        Assertions.assertTrue(set.contains(unsaved));
+
+        imageRepository.addImage(imageDetails);
+        ImageDetails saved = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
+        ImageDetails sameId = new ImageDetails();
+        sameId.setId(saved.getId());
+        Assertions.assertEquals(saved, sameId);
+    }
+
     public ImageDetails getImageInitialized() {
         ImageDetails imageDetails = new ImageDetails();
         imageDetails.setModalImage(new Image());
