@@ -60,8 +60,8 @@ public class ImageScaler {
                             marginLength,
                             OP_ANTIALIAS);
                     BufferedImage padded =
-                            new BufferedImage(thumbnail.getWidth() + 2 * whiteSpace, marginLength
-                                    , thumbnail.getType());
+                            new BufferedImage(thumbnail.getWidth() + 2 * whiteSpace
+                                    , marginLength + addedPaddingToBottomOfImage, thumbnail.getType());
                     Graphics g = padded.getGraphics();
                     g.setColor(Color.white);
                     g.fillRect(0, 0, thumbnail.getWidth() + 2 * whiteSpace, thumbnail.getHeight()+addedPaddingToBottomOfImage);
