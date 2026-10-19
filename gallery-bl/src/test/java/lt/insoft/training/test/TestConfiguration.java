@@ -18,7 +18,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -40,15 +39,11 @@ public class TestConfiguration {
     }
 
     @Bean
-    public EntityManager entityManager() {
-        return entityManagerFactory().createEntityManager();
-    }
-
-    @Bean
     public EntityManagerFactory entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean lef = new LocalContainerEntityManagerFactoryBean();
         lef.setDataSource(dataSource());
-        lef.setPersistenceUnitName("testTrainingPersistence");
+        // same persistence unit as the application; only the data source differs
+        lef.setPersistenceUnitName("trainingPersistence");
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setShowSql(true);
         lef.setJpaVendorAdapter(vendorAdapter);

@@ -26,13 +26,12 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="jpaVendorAdapter">
             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-                <property name="showSql" value="true"/>
+                <!-- Hibernate could detect the dialect itself, but only by connecting at startup;
+                     setting it lets the app start while the database is unavailable -->
                 <property name="databasePlatform" value="org.hibernate.dialect.OracleDialect"/>
             </bean>
         </property>
     </bean>
-
-    <!--<bean id="imageRepository" class="lt.insoft.training.bl.Repository.impl.ImageRepositoryImpl"/>-->
 
     <!-- Resolves ${...} from environment variables (and JVM system properties) -->
     <context:property-placeholder/>
@@ -56,12 +55,9 @@
         <http pattern="/css/**" security="none"/>
         <http pattern="/js/**" security="none"/>
         <http auto-config="true">
-            <!-- ZK AU reqeust -->
-
+            <!-- ZK AU requests -->
             <intercept-url pattern="/zkau/**" access="permitAll()"/>
             <intercept-url pattern="/login.zul*" access="isAnonymous()"/>
-            <!--<intercept-url pattern="/*.zul" access="hasRole('USER'"></intercept-url>-->
-            <!--<intercept-url pattern="/zk/*" access="hasRole('USER'"></intercept-url>-->
             <intercept-url pattern="/**" access="hasRole('USER')"/>
             <form-login login-page='/login.zul'
                         authentication-failure-url="/login.zul?login_error=1"
@@ -75,14 +71,6 @@
                     logout-success-url="/login.zul"/>
         </http>
 
-        <!--<authentication-manager>-->
-            <!--<authentication-provider>-->
-                <!--<user-service>-->
-                    <!--<user name="a" password="a" authorities="ROLE_USER"/>-->
-                <!--</user-service>-->
-            <!--</authentication-provider>-->
-        <!--</authentication-manager>-->
-
         <authentication-manager>
             <!-- Passwords in POV_USER are stored as plain text. Spring Security 5+ rejects passwords
                  without an encoder prefix, so plain-text comparison is configured explicitly.
@@ -90,11 +78,7 @@
             <authentication-provider user-service-ref='userDetailsRepositoryImpl'>
                 <password-encoder ref="noOpPasswordEncoder"/>
             </authentication-provider>
-            <!--<authentication-provider user-service-ref='org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl'/>-->
         </authentication-manager>
-
-        <!--<beans:bean name="bcryptEncoder"-->
-                    <!--class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>-->
     </b:beans>
 
 </beans>
