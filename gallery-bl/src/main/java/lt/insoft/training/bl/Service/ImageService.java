@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by povilas.jegelevicius on 2017-02-22.
@@ -22,37 +19,49 @@ public class ImageService {
     @Autowired
     private ImageRepository imageRepository;
 
-    public void add(ImageDetails imageDetails) {
-        imageRepository.addImage(imageDetails);
+    public boolean add(ImageDetails imageDetails) {
+        return imageRepository.addImage(imageDetails);
     }
 
-    public void updateImage(ImageDetails imageDetails) {
-        imageRepository.updateImage(imageDetails);
+    /**
+     * @return false if the image no longer exists
+     */
+    public boolean updateImage(ImageDetails imageDetails) {
+        return imageRepository.updateImage(imageDetails);
     }
 
+    @Transactional(readOnly = true)
     public List<ImageDetails> selectFolderImages(Folder folder, int from, int maxImages) {
         return imageRepository.selectFolderImages(folder, from, maxImages);
     }
 
+    @Transactional(readOnly = true)
     public long countImagesInFolder(Folder folder) {
         return imageRepository.countImagesInFolder(folder);
     }
 
+    /**
+     * @return the image with its full-size image, modal image and tags loaded, or null if it no longer exists
+     */
+    @Transactional(readOnly = true)
     public ImageDetails getImageDetailsInitialized(long id) {
         return imageRepository.getImageDetailsInitialized(id);
     }
 
-    public void deleteImage(ImageDetails imageDetails) {
-        imageRepository.deleteImage(imageDetails);
+    /**
+     * @return false if the image no longer exists
+     */
+    public boolean deleteImage(ImageDetails imageDetails) {
+        return imageRepository.deleteImage(imageDetails);
     }
 
+    @Transactional(readOnly = true)
     public long countImagesBySearchCriteria(String searchInput) {
         return imageRepository.countImagesBySearchCriteria(searchInput);
     }
 
-    public List<ImageDetails> selectImagesBySearchCriteria(String searchInput, int from, int to) {
-        return imageRepository.selectImagesBySearchCriteria(searchInput, from, to);
+    @Transactional(readOnly = true)
+    public List<ImageDetails> selectImagesBySearchCriteria(String searchInput, int from, int maxResults) {
+        return imageRepository.selectImagesBySearchCriteria(searchInput, from, maxResults);
     }
-
-
 }

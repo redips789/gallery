@@ -18,23 +18,25 @@ public class FolderService {
     @Autowired
     private FolderRepository folderRepository;
 
+    /**
+     * @return false if a folder with the same name already exists
+     */
     public boolean addFolder(Folder folder) {
-        if (folderRepository.selectFolderByName(folder.getFolderName()) == null) {
-            folderRepository.addFolder(folder);
-            return true;
-        }
-        return false;
+        return folderRepository.addFolder(folder);
     }
 
+    @Transactional(readOnly = true)
     public long countFolders() {
         return folderRepository.countFolders();
     }
 
+    @Transactional(readOnly = true)
     public List<Folder> selectFolders(int from, int maxFolders) {
         return folderRepository.selectFolders(from, maxFolders);
     }
 
-    public Folder selectFolderById(int id) {
+    @Transactional(readOnly = true)
+    public Folder selectFolderById(long id) {
         return folderRepository.selectFolderById(id);
     }
 
@@ -45,11 +47,10 @@ public class FolderService {
         return folderRepository.deleteFolder(folder);
     }
 
+    /**
+     * @return false if another folder already has this name or the folder no longer exists
+     */
     public boolean updateFolder(Folder folder) {
-        if (folderRepository.selectFolderByName(folder.getFolderName()) == null) {
-            folderRepository.updateFolder(folder);
-            return true;
-        }
-        return false;
+        return folderRepository.updateFolder(folder);
     }
 }

@@ -1,19 +1,20 @@
 package lt.insoft.training.bl.Service;
 
-import lt.insoft.training.model.ImageDetails_;
-import org.springframework.stereotype.Component;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by povilas.jegelevicius on 2017-03-30.
  */
-//@Component("imageService")
 public class UtilityService {
+
+    // accepts 2017-04-06 as well as 2017-4-6; the whole input must be a valid date
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-M-d").withResolverStyle(ResolverStyle.STRICT);
 
     public String escapeSpecialCharacters(String searchInput) {
         // LIKE wildcards plus the escape character itself ('!'), which must go first
@@ -24,14 +25,14 @@ public class UtilityService {
         return searchInput;
     }
 
+    /**
+     * @return the date at the start of that day, or null if the input is not exactly a yyyy-MM-dd date
+     */
     public Date parseDateService(String date) {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        Date parsedDate;
         try {
-            df.setLenient(false);
-            parsedDate = df.parse(date);
-            return parsedDate;
-        } catch (ParseException e) {
+            LocalDate parsedDate = LocalDate.parse(date.trim(), DATE_FORMAT);
+            return Date.from(parsedDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } catch (DateTimeParseException e) {
             return null;
         }
     }

@@ -7,6 +7,7 @@ https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd">
         <class>lt.insoft.training.model.ImageDetails</class>
         <class>lt.insoft.training.model.Folder</class>
         <class>lt.insoft.training.model.Image</class>
+        <class>lt.insoft.training.model.User</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
     </persistence-unit>
 </persistence>
