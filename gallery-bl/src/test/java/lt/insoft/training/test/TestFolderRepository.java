@@ -1,30 +1,33 @@
 package lt.insoft.training.test;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lt.insoft.training.bl.Repository.FolderRepository;
 import lt.insoft.training.bl.Repository.ImageRepository;
 import lt.insoft.training.model.Folder;
 import lt.insoft.training.model.ImageDetails;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.List;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import static java.lang.Math.toIntExact;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
+ * Each test runs in a transaction that is rolled back afterwards.
+ *
  * Created by povilas.jegelevicius on 2017-04-04.
  */
 @ContextConfiguration(classes = TestConfiguration.class)
 @ExtendWith(SpringExtension.class)
+@Transactional
 public class TestFolderRepository {
+
+    private static final long MISSING_ID = -1;
 
     @Autowired
     private FolderRepository folderRepository;
@@ -32,143 +35,161 @@ public class TestFolderRepository {
     @Autowired
     private ImageRepository imageRepository;
 
-    private String folderName="test";
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    // has a time of day, so searching by date must match the whole day
-    private LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
-    private Folder folder = new Folder(folderName, insertDate);
+    private final String folderName = "test";
+
+    private final LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
+
+    private final Folder folder = new Folder(folderName, insertDate);
+
+    /**
+     * Writes pending changes and empties the persistence context, so the next read comes from the
+     * database instead of returning the objects the test already holds.
+     */
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
+    }
 
     @Test
-    @Transactional
-    @Rollback
+    public void testAddFolder() {
+        Assertions.assertTrue(folderRepository.addFolder(folder));
+        Assertions.assertNotNull(folder.getId());
+        flushAndClear();
+        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
+        Assertions.assertEquals(folder.getId(), folderFromDB.getId());
+        Assertions.assertEquals(insertDate, folderFromDB.getInsertDate());
+    }
+
+    @Test
+    public void testAddFolderWithSameName() {
+        Assertions.assertTrue(folderRepository.addFolder(folder));
+        Assertions.assertFalse(folderRepository.addFolder(new Folder(folderName, insertDate)));
+        Assertions.assertEquals(1, folderRepository.countFolders());
+    }
+
+    @Test
+    public void testDeleteFolder() {
+        folderRepository.addFolder(folder);
+        flushAndClear();
+        Assertions.assertTrue(folderRepository.deleteFolder(folder));
+        flushAndClear();
+        Assertions.assertNull(folderRepository.selectFolderByName(folderName));
+    }
+
+    @Test
     public void testDeleteFolderWithImages() {
         folderRepository.addFolder(folder);
         ImageDetails imageDetails = new ImageDetails();
         imageDetails.setImageName("imageName");
         imageDetails.setFolder(folder);
         imageRepository.addImage(imageDetails);
+        flushAndClear();
         Assertions.assertFalse(folderRepository.deleteFolder(folder));
+        flushAndClear();
         Assertions.assertNotNull(folderRepository.selectFolderByName(folderName));
     }
 
-
     @Test
-    @Transactional
-    @Rollback
-    public void testAddFolder() {
-        folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        Assertions.assertEquals(folder.getFolderName(), folderFromDB.getFolderName());
+    public void testDeleteFolderNotSaved() {
+        Assertions.assertFalse(folderRepository.deleteFolder(folder));
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void testAddFolderAddFolderWithSameName() {
-        Assertions.assertEquals(true, folderRepository.addFolder(folder));
-        folder = new Folder(folderName, insertDate);
-        Assertions.assertEquals(false, folderRepository.addFolder(folder));
-    }
-
-    @Test
-    @Transactional
-    @Rollback
-    public void testDeleteFolder() {
-        folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        folderRepository.deleteFolder(folderFromDB);
-        folderFromDB = folderRepository.selectFolderByName(folderName);
-        Assertions.assertEquals(null, folderFromDB);
-    }
-
-    @Test
-    @Transactional
-    @Rollback
-    public void testDeleteFolderThatDoesntExist() {
-        Assertions.assertEquals(false, folderRepository.deleteFolder(folder));
-    }
-
-    @Test
-    @Transactional
-    @Rollback
     public void testUpdateFolder() {
         folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        folderFromDB.setFolderName("testas2");
-        Assertions.assertEquals(folderRepository.updateFolder(folderFromDB), true);
-        folderFromDB = folderRepository.selectFolderByName("testas2");
-        Assertions.assertNotEquals(null, folderFromDB);
+        flushAndClear();
+        // detached copy, like the one a page holds between requests
+        Folder renamed = folderRepository.selectFolderById(folder.getId());
+        entityManager.detach(renamed);
+        renamed.setFolderName("renamed");
+        Assertions.assertTrue(folderRepository.updateFolder(renamed));
+        flushAndClear();
+        Assertions.assertNotNull(folderRepository.selectFolderByName("renamed"));
+        Assertions.assertNull(folderRepository.selectFolderByName(folderName));
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void testUpdateFolderThatDoesntExist() {
+    public void testUpdateFolderKeepingSameName() {
         folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        folderRepository.deleteFolder(folder);
-        folderFromDB.setFolderName("testas2");
-        Assertions.assertEquals(folderRepository.updateFolder(folderFromDB), false);
-        folderFromDB = folderRepository.selectFolderByName("testas2");
-        Assertions.assertEquals(null, folderFromDB);
+        flushAndClear();
+        Assertions.assertTrue(folderRepository.updateFolder(folder));
     }
 
     @Test
-    @Transactional
-    @Rollback
+    public void testUpdateFolderToNameOfAnotherFolder() {
+        folderRepository.addFolder(folder);
+        Folder other = new Folder("other", insertDate);
+        folderRepository.addFolder(other);
+        flushAndClear();
+        other.setFolderName(folderName);
+        Assertions.assertFalse(folderRepository.updateFolder(other));
+        flushAndClear();
+        Assertions.assertEquals("other", folderRepository.selectFolderById(other.getId()).getFolderName());
+    }
+
+    @Test
+    public void testUpdateDeletedFolder() {
+        folderRepository.addFolder(folder);
+        flushAndClear();
+        Assertions.assertTrue(folderRepository.deleteFolder(folder));
+        flushAndClear();
+        folder.setFolderName("renamed");
+        Assertions.assertFalse(folderRepository.updateFolder(folder));
+        Assertions.assertNull(folderRepository.selectFolderByName("renamed"));
+    }
+
+    @Test
     public void testSelectFolderById() {
         folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        folderRepository.selectFolderById(folderFromDB.getId());
-        Assertions.assertEquals(folderFromDB, folderRepository.selectFolderById(toIntExact(folderFromDB.getId())));
+        flushAndClear();
+        Assertions.assertEquals(folderName, folderRepository.selectFolderById(folder.getId()).getFolderName());
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void testSelectFolderByIdThatDoesntExist() {
-        Folder folder = folderRepository.selectFolderById(toIntExact(5));
-        Assertions.assertEquals(null, folder);
+        Assertions.assertNull(folderRepository.selectFolderById(MISSING_ID));
     }
 
-
     @Test
-    @Transactional
-    @Rollback
-    public void testSelectFolders() {
+    public void testSelectFoldersOrderAndPaging() {
+        Folder newest = new Folder("newest", insertDate.plusDays(2));
+        Folder oldest = new Folder("oldest", insertDate.minusDays(2));
+        folderRepository.addFolder(newest);
         folderRepository.addFolder(folder);
-        Folder folderFromDB = folderRepository.selectFolderByName(folderName);
-        Assertions.assertEquals(folderFromDB, folderRepository.selectFolders(0, 1).get(0));
-        //Assertions.assertEquals(folderRepository.countFolders(), 1);
+        folderRepository.addFolder(oldest);
+        flushAndClear();
+        // oldest first
+        List<Folder> firstPage = folderRepository.selectFolders(0, 2);
+        Assertions.assertEquals(List.of("oldest", folderName),
+                firstPage.stream().map(Folder::getFolderName).toList());
+        List<Folder> secondPage = folderRepository.selectFolders(2, 2);
+        Assertions.assertEquals(List.of("newest"), secondPage.stream().map(Folder::getFolderName).toList());
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void testSelectFoldersNoFolders() {
-        Assertions.assertEquals(true, folderRepository.selectFolders(0, 1).isEmpty());
+        Assertions.assertTrue(folderRepository.selectFolders(0, 1).isEmpty());
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void countFolders() {
+    public void testCountFolders() {
+        Assertions.assertEquals(0, folderRepository.countFolders());
         folderRepository.addFolder(folder);
-        Assertions.assertEquals(folderRepository.countFolders(), 1);
+        Assertions.assertEquals(1, folderRepository.countFolders());
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void selectFolderByName() {
+    public void testSelectFolderByName() {
         folderRepository.addFolder(folder);
-        Assertions.assertEquals(folderName, folderRepository.selectFolderByName(folderName).getFolderName());
+        flushAndClear();
+        Assertions.assertEquals(folder.getId(), folderRepository.selectFolderByName(folderName).getId());
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void selectFolderByNameNotExist() {
-        Assertions.assertEquals(null, folderRepository.selectFolderByName(folderName));
+    public void testSelectFolderByNameThatDoesntExist() {
+        Assertions.assertNull(folderRepository.selectFolderByName(folderName));
     }
 }

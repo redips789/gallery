@@ -58,7 +58,8 @@ public class ImageRepositoryImpl implements ImageRepository {
         ImageDetails imageDetaislFormDB = entityManager.find(ImageDetails.class, updatedImage.getId());
         if(imageDetaislFormDB != null) {
             if (updatedImage.getTags() != null) {
-                imageDetaislFormDB.setTags(updatedImage.getTags());
+                // copied: the caller's list may be one Hibernate loaded for another instance, which can't be shared
+                imageDetaislFormDB.setTags(new ArrayList<>(updatedImage.getTags()));
             }
             imageDetaislFormDB.setImageName(updatedImage.getImageName());
             imageDetaislFormDB.setDescription(updatedImage.getDescription());
@@ -87,7 +88,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
         cq.where(cb.equal(imageDetails.get(ImageDetails_.folder).get(Folder_.id), folder.getId()));
         cq.select(imageDetails);
-        // INSERT_DATE has no time part, so id keeps the order stable between pages
+        // id breaks ties between equal dates, so the order is stable between pages
         cq.orderBy(cb.asc(imageDetails.get(ImageDetails_.insertDate)), cb.asc(imageDetails.get(ImageDetails_.id)));
         TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
         q.setFirstResult(from);

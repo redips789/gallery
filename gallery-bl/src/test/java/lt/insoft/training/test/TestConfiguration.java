@@ -1,36 +1,31 @@
 package lt.insoft.training.test;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import jakarta.persistence.EntityManagerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.orm.jpa.JpaDialect;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-
 /**
+ * The application's beans on an in-memory H2 database. Transactions are enabled the same way as
+ * &lt;tx:annotation-driven/&gt; in applicationContext.xml, so the services' @Transactional settings apply.
+ *
  * Created by povilas.jegelevicius on 2017-04-05.
  */
 @Configuration
+@EnableTransactionManagement
 @ComponentScan(basePackages = "lt.insoft.training.bl")
 public class TestConfiguration {
 
     @Bean
-//    @Qualifier("entityManager")
     public DataSource dataSource() {
         return new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2)
@@ -39,25 +34,17 @@ public class TestConfiguration {
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean lef = new LocalContainerEntityManagerFactoryBean();
-        lef.setDataSource(dataSource());
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setDataSource(dataSource);
         // same persistence unit as the application; only the data source differs
-        lef.setPersistenceUnitName("trainingPersistence");
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setShowSql(true);
-        lef.setJpaVendorAdapter(vendorAdapter);
-//        lef.setPackagesToScan("lt.insoft.training");
-        lef.afterPropertiesSet();
-        return lef.getObject();
+        factory.setPersistenceUnitName("trainingPersistence");
+        factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        return factory;
     }
 
     @Bean
-    public PlatformTransactionManager txManager() {
-        return new JpaTransactionManager(entityManagerFactory());
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
-//    @Bean
-//    public PlatformTransactionManager transactionManager() {
-//        return new JpaTransactionManager(entityManagerFactory());
-//    }
 }

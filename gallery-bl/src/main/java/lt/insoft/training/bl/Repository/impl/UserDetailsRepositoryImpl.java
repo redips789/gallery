@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,27 +33,33 @@ public class UserDetailsRepositoryImpl implements UserDetailsRepository, UserDet
 
     @Override
     public boolean addUser(lt.insoft.training.model.User user) {
-        try {
-            entityManager.persist(user);
-            entityManager.flush();
-            return true;
-        } catch (PersistenceException e) {
+        // checked up front: a failed flush would mark the whole transaction rollback-only
+        if (selectUserByName(user.getUsername()) != null) {
             return false;
+        }
+        entityManager.persist(user);
+        entityManager.flush();
+        return true;
+    }
+
+    private lt.insoft.training.model.User selectUserByName(String username) {
+        CriteriaBuilder qb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<lt.insoft.training.model.User> cq = qb.createQuery(lt.insoft.training.model.User.class);
+        Root<lt.insoft.training.model.User> user = cq.from(lt.insoft.training.model.User.class);
+        cq.select(user);
+        cq.where(qb.equal(user.get(User_.username), username));
+        TypedQuery<lt.insoft.training.model.User> q = entityManager.createQuery(cq);
+        try {
+            return q.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         }
     }
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        CriteriaBuilder qb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<lt.insoft.training.model.User> cq = qb.createQuery(lt.insoft.training.model.User.class);
-        Root<lt.insoft.training.model.User> user = cq.from(lt.insoft.training.model.User.class);
-        cq.select(user);
-        cq.where(qb.equal(user.get(User_.username), s));
-        TypedQuery<lt.insoft.training.model.User> q = entityManager.createQuery(cq);
-        lt.insoft.training.model.User userEntity;
-        try {
-            userEntity = q.getSingleResult();
-        } catch (NoResultException e) {
+        lt.insoft.training.model.User userEntity = selectUserByName(s);
+        if (userEntity == null) {
             throw new UsernameNotFoundException("Username: " + s + " not found");
         }
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();

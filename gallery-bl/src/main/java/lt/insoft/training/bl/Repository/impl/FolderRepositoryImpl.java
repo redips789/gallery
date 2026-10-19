@@ -72,7 +72,7 @@ public class FolderRepositoryImpl implements FolderRepository {
         CriteriaQuery<Folder> cq = cb.createQuery(Folder.class);
         Root<Folder> folders = cq.from(Folder.class);
         cq.select(folders);
-        // INSERT_DATE has no time part, so id keeps the order stable between pages
+        // id breaks ties between equal dates, so the order is stable between pages
         cq.orderBy(cb.asc(folders.get(Folder_.insertDate)), cb.asc(folders.get(Folder_.id)));
         TypedQuery<Folder> q = entityManager.createQuery(cq);
         q.setFirstResult(from);
