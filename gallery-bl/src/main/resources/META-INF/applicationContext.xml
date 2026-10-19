@@ -34,11 +34,15 @@
 
     <!--<bean id="imageRepository" class="lt.insoft.training.bl.Repository.impl.ImageRepositoryImpl"/>-->
 
+    <!-- Resolves ${...} from environment variables (and JVM system properties) -->
+    <context:property-placeholder/>
+
+    <!-- Connection settings come from the DB_URL, DB_USERNAME and DB_PASSWORD environment variables -->
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
-        <property name="url" value="jdbc:oracle:thin:@oracle.insoft.dev:1521:dev"></property>
-        <property name="username" value="mokymai"></property>
-        <property name="password" value="insoft_mokymai"></property>
+        <property name="url" value="${DB_URL:jdbc:oracle:thin:@oracle.insoft.dev:1521:dev}"></property>
+        <property name="username" value="${DB_USERNAME}"></property>
+        <property name="password" value="${DB_PASSWORD}"></property>
     </bean>
 
     <bean id="noOpPasswordEncoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
