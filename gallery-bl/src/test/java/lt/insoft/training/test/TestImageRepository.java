@@ -245,6 +245,42 @@ public class TestImageRepository {
         Assertions.assertEquals(1, count);
     }
 
+    @Test
+    @Transactional
+    @Rollback
+    public void selectImagesBySearchCriteriaRespectsMaxResults() {
+        imageRepository.addImage(imageDetails);
+        imageRepository.addImage(getImageInitialized());
+        imageRepository.addImage(getImageInitialized());
+        Assertions.assertEquals(3, imageRepository.countImagesBySearchCriteria(imageName));
+        Assertions.assertEquals(2, imageRepository.selectImagesBySearchCriteria(imageName, 0, 2).size());
+        Assertions.assertEquals(1, imageRepository.selectImagesBySearchCriteria(imageName, 2, 2).size());
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testGetImageDetailsInitializedWithoutModalImage() {
+        imageDetails.setModalImage(null);
+        imageRepository.addImage(imageDetails);
+        long id = imageRepository.selectImagesByName(imageName, 0, 1).get(0).getId();
+        Assertions.assertNotNull(imageRepository.getImageDetailsInitialized(id));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testGetImageDetailsInitializedNoImage() {
+        Assertions.assertNull(imageRepository.getImageDetailsInitialized(12345));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testDeleteImageNotSaved() {
+        Assertions.assertFalse(imageRepository.deleteImage(new ImageDetails()));
+    }
+
     public ImageDetails getImageInitialized() {
         ImageDetails imageDetails = new ImageDetails();
         imageDetails.setModalImage(new Image());
@@ -254,6 +290,7 @@ public class TestImageRepository {
         imageDetails.setImageName("imageName");
         imageDetails.setInsertDate(cal.getTime());
         imageDetails.setQuality(quality);
+        imageDetails.setTags(new ArrayList<>(Collections.singletonList(tagName)));
 
         return imageDetails;
     }

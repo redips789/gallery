@@ -26,7 +26,7 @@ public interface ImageRepository {
 
     long countImagesBySearchCriteria(String searchQuery);
 
-    List<ImageDetails> selectImagesByName(String name, int from, int to);
+    List<ImageDetails> selectImagesByName(String name, int from, int maxResults);
 
-    List<ImageDetails> selectImagesBySearchCriteria(String searchQuery, int from, int to);
+    List<ImageDetails> selectImagesBySearchCriteria(String searchQuery, int from, int maxResults);
 }

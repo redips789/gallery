@@ -2,18 +2,13 @@ package lt.insoft.training.bl.Repository.impl;
 
 import lt.insoft.training.bl.Repository.FolderRepository;
 import lt.insoft.training.model.*;
-import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import java.util.List;
-
-import static java.lang.Math.toIntExact;
 
 /**
  * Created by povilas.jegelevicius on 2017-03-02.
@@ -26,46 +21,44 @@ public class FolderRepositoryImpl implements FolderRepository {
 
     @Override
     public boolean addFolder(Folder folder) {
-        try {
-            entityManager.persist(folder);
-            entityManager.flush();
-            return true;
-        } catch (PersistenceException e) {
+        // checked up front: a failed flush would mark the whole transaction rollback-only
+        if (selectFolderByName(folder.getFolderName()) != null) {
             return false;
         }
+        entityManager.persist(folder);
+        entityManager.flush();
+        return true;
     }
 
     @Override
-    public boolean deleteFolder(Folder folder) throws EntityNotFoundException {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Folder> cq = cb.createQuery(Folder.class);
-        Root<Folder> folderRoot = cq.from(Folder.class);
-        cq.where(cb.equal(folderRoot.get(Folder_.id), folder.getId()));
-        cq.select(folderRoot);
-        TypedQuery<Folder> q = entityManager.createQuery(cq);
-        List<Folder> folders = q.getResultList();
-        if (!folders.isEmpty()) {
-            entityManager.remove(folders.get(0));
-            return true;
-        } else {
+    public boolean deleteFolder(Folder folder) {
+        if (folder.getId() == null) {
             return false;
         }
+        Folder folderFromDB = entityManager.find(Folder.class, folder.getId());
+        if (folderFromDB == null || countImagesInFolder(folderFromDB) > 0) {
+            return false;
+        }
+        entityManager.remove(folderFromDB);
+        return true;
     }
 
     @Override
     public boolean updateFolder(Folder folder) {
-        Folder fold = entityManager.find(Folder.class, folder.getId());
-        if (fold != null) {
-            fold.setFolderName(folder.getFolderName());
-            try {
-                entityManager.persist(fold);
-                entityManager.flush();
-                return true;
-            } catch (PersistenceException e) {
-                return false;
-            }
+        if (folder.getId() == null) {
+            return false;
         }
-        return false;
+        Folder fold = entityManager.find(Folder.class, folder.getId());
+        if (fold == null) {
+            return false;
+        }
+        Folder sameName = selectFolderByName(folder.getFolderName());
+        if (sameName != null && !sameName.getId().equals(fold.getId())) {
+            return false;
+        }
+        fold.setFolderName(folder.getFolderName());
+        entityManager.flush();
+        return true;
     }
 
     @Override
@@ -79,7 +72,8 @@ public class FolderRepositoryImpl implements FolderRepository {
         CriteriaQuery<Folder> cq = cb.createQuery(Folder.class);
         Root<Folder> folders = cq.from(Folder.class);
         cq.select(folders);
-        cq.orderBy(cb.asc(folders.get(Folder_.insertDate)));
+        // INSERT_DATE has no time part, so id keeps the order stable between pages
+        cq.orderBy(cb.asc(folders.get(Folder_.insertDate)), cb.asc(folders.get(Folder_.id)));
         TypedQuery<Folder> q = entityManager.createQuery(cq);
         q.setFirstResult(from);
         q.setMaxResults(maxFolders);
@@ -109,5 +103,14 @@ public class FolderRepositoryImpl implements FolderRepository {
         } else {
             return folderList.get(0);
         }
+    }
+
+    private long countImagesInFolder(Folder folder) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
+        cq.select(cb.count(imageDetails));
+        cq.where(cb.equal(imageDetails.get(ImageDetails_.folder).get(Folder_.id), folder.getId()));
+        return entityManager.createQuery(cq).getSingleResult();
     }
 }

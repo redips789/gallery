@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
@@ -53,7 +54,7 @@ public class UserDetailsRepositoryImpl implements UserDetailsRepository, UserDet
         lt.insoft.training.model.User userEntity;
         try {
             userEntity = q.getSingleResult();
-        } catch (Exception e) {
+        } catch (NoResultException e) {
             throw new UsernameNotFoundException("Username: " + s + " not found");
         }
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();

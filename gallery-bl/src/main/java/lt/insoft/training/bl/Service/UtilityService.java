@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class UtilityService {
 
     public String escapeSpecialCharacters(String searchInput) {
-        String[] specialCharacters = {"!", "\\\\", "\\,", "\\&", "\\?", "\\{", "\\}", "\\(", "\\)", "\\[", "\\]", "\\-", "\\;"
-                , "\\~", "\\|", "\\$", "\\>", "\\*", "%", "_"};
+        // LIKE wildcards plus the escape character itself ('!'), which must go first
+        String[] specialCharacters = {"!", "%", "_"};
         for (String item : specialCharacters) {
             searchInput = searchInput.replace(item, "!" + item);
         }

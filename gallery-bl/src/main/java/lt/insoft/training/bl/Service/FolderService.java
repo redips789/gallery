@@ -38,8 +38,11 @@ public class FolderService {
         return folderRepository.selectFolderById(id);
     }
 
-    public void deleteFolder(Folder folder) {
-        folderRepository.deleteFolder(folder);
+    /**
+     * @return false if the folder still contains images (it is not deleted) or no longer exists
+     */
+    public boolean deleteFolder(Folder folder) {
+        return folderRepository.deleteFolder(folder);
     }
 
     public boolean updateFolder(Folder folder) {

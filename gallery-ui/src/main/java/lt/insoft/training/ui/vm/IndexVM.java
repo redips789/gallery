@@ -12,6 +12,7 @@ import org.zkoss.bind.annotation.*;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Messagebox;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -206,8 +207,13 @@ public class IndexVM {
 	@Command
 	@NotifyChange("folders")
 	public void deleteFolder(){
-		folderService.deleteFolder(folderToDelete);
-		folders.remove(folderToDelete);
+		if (folderService.deleteFolder(folderToDelete)) {
+			folders.remove(folderToDelete);
+		} else {
+			Messagebox.show("Folder \"" + folderToDelete.getFolderName()
+					+ "\" is not empty. Delete its pictures first.", "Cannot delete folder",
+					Messagebox.OK, Messagebox.EXCLAMATION);
+		}
 	}
 
 	@GlobalCommand

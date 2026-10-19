@@ -41,9 +41,6 @@
         <property name="password" value="insoft_mokymai"></property>
     </bean>
 
-    <bean id="myUserDetailsService" class="lt.insoft.training.bl.Repository.impl.UserDetailsRepositoryImpl">
-    </bean>
-
     <bean id="noOpPasswordEncoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
           factory-method="getInstance"/>
 
@@ -86,7 +83,7 @@
             <!-- Passwords in POV_USER are stored as plain text. Spring Security 5+ rejects passwords
                  without an encoder prefix, so plain-text comparison is configured explicitly.
                  TODO: migrate stored passwords to BCrypt and switch to a BCryptPasswordEncoder. -->
-            <authentication-provider user-service-ref='myUserDetailsService'>
+            <authentication-provider user-service-ref='userDetailsRepositoryImpl'>
                 <password-encoder ref="noOpPasswordEncoder"/>
             </authentication-provider>
             <!--<authentication-provider user-service-ref='org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl'/>-->

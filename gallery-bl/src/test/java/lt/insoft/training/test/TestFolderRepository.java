@@ -1,7 +1,9 @@
 package lt.insoft.training.test;
 
 import lt.insoft.training.bl.Repository.FolderRepository;
+import lt.insoft.training.bl.Repository.ImageRepository;
 import lt.insoft.training.model.Folder;
+import lt.insoft.training.model.ImageDetails;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -28,10 +30,27 @@ public class TestFolderRepository {
 
     @Autowired
     private FolderRepository folderRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
+
     private String folderName="test";
 
     private Calendar cal = new GregorianCalendar(2017, 03, 06);
     private Folder folder = new Folder(folderName, cal.getTime());
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testDeleteFolderWithImages() {
+        folderRepository.addFolder(folder);
+        ImageDetails imageDetails = new ImageDetails();
+        imageDetails.setImageName("imageName");
+        imageDetails.setFolder(folder);
+        imageRepository.addImage(imageDetails);
+        Assertions.assertFalse(folderRepository.deleteFolder(folder));
+        Assertions.assertNotNull(folderRepository.selectFolderByName(folderName));
+    }
 
 
     @Test

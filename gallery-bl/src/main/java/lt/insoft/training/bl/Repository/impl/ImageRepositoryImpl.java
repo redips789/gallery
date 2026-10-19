@@ -52,30 +52,22 @@ public class ImageRepositoryImpl implements ImageRepository {
             }
             imageDetaislFormDB.setImageName(updatedImage.getImageName());
             imageDetaislFormDB.setDescription(updatedImage.getDescription());
-            entityManager.persist(imageDetaislFormDB);
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean deleteImage(ImageDetails imageDetails) throws EntityNotFoundException {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ImageDetails> cq = cb.createQuery(ImageDetails.class);
-        Root<ImageDetails> imageDetailsRoot = cq.from(ImageDetails.class);
-        cq.where(cb.equal(imageDetailsRoot.get(ImageDetails_.id), imageDetails.getId()));
-        cq.select(imageDetailsRoot);
-        TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
-        List<ImageDetails> images = q.getResultList();
-        if (!images.isEmpty()) {
-            try {
-                entityManager.remove(images.get(0));
-                return true;
-            } catch (PersistenceException e) {
-                entityManager.remove(images.get(0));
-            }
+    public boolean deleteImage(ImageDetails imageDetails) {
+        if (imageDetails.getId() == null) {
+            return false;
         }
-        return false;
+        ImageDetails imageFromDB = entityManager.find(ImageDetails.class, imageDetails.getId());
+        if (imageFromDB == null) {
+            return false;
+        }
+        entityManager.remove(imageFromDB);
+        return true;
     }
 
     @Override
@@ -85,7 +77,8 @@ public class ImageRepositoryImpl implements ImageRepository {
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
         cq.where(cb.equal(imageDetails.get(ImageDetails_.folder).get(Folder_.id), folder.getId()));
         cq.select(imageDetails);
-        cq.orderBy(cb.asc(imageDetails.get(ImageDetails_.insertDate)));
+        // INSERT_DATE has no time part, so id keeps the order stable between pages
+        cq.orderBy(cb.asc(imageDetails.get(ImageDetails_.insertDate)), cb.asc(imageDetails.get(ImageDetails_.id)));
         TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
         q.setFirstResult(from);
         q.setMaxResults(maxImages);
@@ -106,25 +99,27 @@ public class ImageRepositoryImpl implements ImageRepository {
     public ImageDetails getImageDetailsInitialized(long id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ImageDetails> q = cb.createQuery(ImageDetails.class);
-        Root o = q.from(ImageDetails.class);
-        o.fetch("modalImage", JoinType.INNER);
-        o.fetch("tags", JoinType.LEFT);
-        o.fetch("image", JoinType.INNER);
+        Root<ImageDetails> o = q.from(ImageDetails.class);
+        o.fetch(ImageDetails_.modalImage, JoinType.LEFT);
+        o.fetch(ImageDetails_.tags, JoinType.LEFT);
+        o.fetch(ImageDetails_.image, JoinType.LEFT);
         q.select(o);
-        q.where(cb.equal(o.get("id"), Long.valueOf(id)));
-        return entityManager.createQuery(q).getSingleResult();
+        q.where(cb.equal(o.get(ImageDetails_.id), id));
+        List<ImageDetails> result = entityManager.createQuery(q).getResultList();
+        return result.isEmpty() ? null : result.get(0);
     }
 
     @Override
-    public List<ImageDetails> selectImagesByName(String name, int from, int to) {
+    public List<ImageDetails> selectImagesByName(String name, int from, int maxResults) {
         CriteriaBuilder qb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ImageDetails> cq = qb.createQuery(ImageDetails.class);
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
         cq.select(imageDetails);
         cq.where(qb.equal(imageDetails.get(ImageDetails_.imageName), name));
+        cq.orderBy(qb.asc(imageDetails.get(ImageDetails_.id)));
         TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
         q.setFirstResult(from);
-        q.setMaxResults(to);
+        q.setMaxResults(maxResults);
         return q.getResultList();
     }
 
@@ -183,7 +178,7 @@ public class ImageRepositoryImpl implements ImageRepository {
     }
 
     @Override
-    public List<ImageDetails> selectImagesBySearchCriteria(String searchQuery, int from, int to) {
+    public List<ImageDetails> selectImagesBySearchCriteria(String searchQuery, int from, int maxResults) {
         CriteriaBuilder qb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ImageDetails> cq = qb.createQuery(ImageDetails.class);
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
@@ -192,10 +187,11 @@ public class ImageRepositoryImpl implements ImageRepository {
         predicates.addAll(buildSearchQueryPredicate(searchQuery, qb, tags, imageDetails));
         cq.select(imageDetails).distinct(true);
         cq.where(qb.or(predicates.toArray(new Predicate[]{})));
+        cq.orderBy(qb.asc(imageDetails.get(ImageDetails_.insertDate)), qb.asc(imageDetails.get(ImageDetails_.id)));
         TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
         q.setFirstResult(from);
-        q.setMaxResults(to);
-        return entityManager.createQuery(cq).getResultList();
+        q.setMaxResults(maxResults);
+        return q.getResultList();
     }
 
     public List<Predicate> buildSearchQueryPredicate(String searchQuery, CriteriaBuilder qb
@@ -210,7 +206,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         }
         String searchQueryWithEscapedCharacters = utilityService.escapeSpecialCharacters(searchQuery);
         predicates.add(qb.like(qb.upper(imageDetails.get(ImageDetails_.description)), "%" + searchQueryWithEscapedCharacters.toUpperCase() + "%", '!'));
-        //predicates.add(qb.equal(qb.upper(.get("NAME")), searchQuery.toUpperCase()));
+        predicates.add(qb.equal(qb.upper(tags), searchQuery.toUpperCase()));
         return predicates;
     }
 }
