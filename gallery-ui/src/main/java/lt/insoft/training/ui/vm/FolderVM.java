@@ -4,7 +4,6 @@ import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.model.Folder;
 import lt.insoft.training.model.ImageDetails;
-import lt.insoft.training.ui.vm.util.ImageToZkImageConverter;
 import lt.insoft.training.ui.vm.validators.NameValidator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -15,6 +14,7 @@ import org.zkoss.zk.ui.event.EventQueues;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Messagebox;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,7 @@ public class FolderVM{
     @WireVariable
     private FolderService folderService;
 
-    Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
+    Log logger = LogFactory.getLog(FolderVM.class);
 
     private List<ImageDetails> imageDetails;
 
@@ -238,12 +238,7 @@ public class FolderVM{
         currentPage = 0;
         pageSize=8;
         if(selectedFolder != null) {
-            numberOfPictures=imageService.countImagesInFolder(selectedFolder);
-            numberOfPages = (long)Math.ceil((double)numberOfPictures/(double)pageSize);
-            imageDetails = imageService.selectFolderImages(selectedFolder,currentPage*pageSize,pageSize);
-            showImageCount =  imageDetails.size() != 0 ? true : false;
-            to = imageDetails.size();
-            showImageCountMessage();
+            refreshPage();
             editFolder = true;
         } else{
             selectedFolder = new Folder();
@@ -255,41 +250,38 @@ public class FolderVM{
         catch (IOException e) {
             logger.error("Error occured, returning folderimg==null", e);
         }
-        nextButtonVisible = numberOfPages -1 != currentPage && numberOfPages > 0 ? true : false;
     }
 
-    @NotifyChange("imageCountMessage")
-    public List<ImageDetails> loadFolderPage(){
+    /**
+     * Recounts the pictures, keeps currentPage within range and reloads it.
+     */
+    private void refreshPage(){
+        numberOfPictures = imageService.countImagesInFolder(selectedFolder);
+        numberOfPages = (long)Math.ceil((double)numberOfPictures/(double)pageSize);
+        if(currentPage > 0 && currentPage >= numberOfPages){
+            currentPage = (int) Math.max(numberOfPages - 1, 0);
+        }
         from = currentPage*pageSize;
-        List<ImageDetails> result = imageService.selectFolderImages(selectedFolder,from,pageSize);
-        to=from+result.size();
-        imageCountMessage = from+1 + "-" + to + " of " + numberOfPictures + " pictures";
-        return result;
+        imageDetails = imageService.selectFolderImages(selectedFolder, from, pageSize);
+        to = from + imageDetails.size();
+        showImageCount = numberOfPictures > 0;
+        imageCountMessage = (imageDetails.isEmpty() ? 0 : from + 1) + "-" + to + " of " + numberOfPictures + " pictures";
+        previousButtonVisible = currentPage > 0;
+        nextButtonVisible = currentPage < numberOfPages - 1;
     }
 
     @Command
-    @NotifyChange({"previousButtonVisible","nextButtonVisible","folders","imageDetails","imageCountMessage"})
+    @NotifyChange({"previousButtonVisible","nextButtonVisible","imageDetails","imageCountMessage","numberOfPictures","showImageCount"})
     public void previous(){
         currentPage--;
-        nextButtonVisible = true;
-        if(currentPage == 0){
-            previousButtonVisible = false;
-        }
-        imageDetails = loadFolderPage();
+        refreshPage();
     }
 
     @Command
-    @NotifyChange({"previousButtonVisible","nextButtonVisible","imageDetails","imageCountMessage"})
+    @NotifyChange({"previousButtonVisible","nextButtonVisible","imageDetails","imageCountMessage","numberOfPictures","showImageCount"})
     public void next(){
-        if(!imageDetails.isEmpty()) {
-            currentPage++;
-            previousButtonVisible = true;
-        }
-        numberOfPages=imageService.countImagesInFolder(selectedFolder)/pageSize;
-        imageDetails = loadFolderPage();
-        if(currentPage >= numberOfPages-1){
-            nextButtonVisible = false;
-        }
+        currentPage++;
+        refreshPage();
     }
 
     @Command
@@ -323,23 +315,17 @@ public class FolderVM{
     @Command
     @NotifyChange({"selectedImage"})
     public  void selectImage(@BindingParam("image")ImageDetails image){
-        selectedImage = imageService.getImageDetailsInitialized(image.getId());
+        selectedImage = image;
     }
 
     @Command
-    @NotifyChange({"imageDetails","numberOfPictures","imageCountMessage","showImageCount"})
+    @NotifyChange({"previousButtonVisible","nextButtonVisible","imageDetails","imageCountMessage","numberOfPictures","showImageCount"})
     public void deleteImage(@BindingParam("image")ImageDetails imageDetails){
-        this.imageDetails.remove(imageDetails);
-        numberOfPictures--;
-        showImageCount = numberOfPictures == 0 ? false : true;
-        to--;
-        showImageCountMessage();
-        imageService.deleteImage(imageDetails);
-    }
-
-    @NotifyChange("imageCountMessage")
-    private void showImageCountMessage(){
-        from = to == 0 ? 0 : to - imageDetails.size() + 1;
-        imageCountMessage = from + "-" + to + " of " + numberOfPictures + " pictures";
+        if (imageDetails == null || !imageService.deleteImage(imageDetails)) {
+            Messagebox.show("This picture no longer exists.", "Picture not found",
+                    Messagebox.OK, Messagebox.EXCLAMATION);
+        }
+        // reload either way: the next page's first picture moves up, or someone else already deleted it
+        refreshPage();
     }
 }

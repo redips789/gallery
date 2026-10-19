@@ -16,7 +16,7 @@
                             </label>
                             <br></br>
                             <zul:image
-                                    content="@load(vm.selectedImage.thumbnail.thumbnail)
+                                    content="@load(vm.selectedImage.thumbnail.image)
                                 @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
                                     sclass="img-thumbnail" zclass="none"/>
                         </div>

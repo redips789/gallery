@@ -4,7 +4,6 @@ import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.model.Folder;
 import lt.insoft.training.model.ImageDetails;
 import lt.insoft.training.bl.Service.ImageService;
-import lt.insoft.training.ui.vm.util.ImageToZkImageConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +20,7 @@ import java.util.List;
 @VariableResolver({DelegatingVariableResolver.class})
 public class IndexVM {
 
-	Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
+	Log logger = LogFactory.getLog(IndexVM.class);
 
 	@WireVariable
 	private ImageService imageService;
@@ -136,10 +135,6 @@ public class IndexVM {
 		currentPage = 0;
 		currentPageName = "folders.zul";
 		pageSize = 3;
-		numberOfPages = (long)Math.ceil((double)folderService.countFolders()/(double)pageSize);
-		if(currentPage+1<numberOfPages){
-			nextButtonVisible = true;
-		}
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 		try (InputStream is = classloader.getResourceAsStream("folder.png")){
 			folderImage = IOUtils.toByteArray(is);
@@ -147,11 +142,7 @@ public class IndexVM {
 		catch (IOException e) {
 			logger.error("Error occured, returning folderimg==null", e);
 		}
-//		selectedImage = new ImageDetails();
-//		selectedImage.setModalImage(new Image(folderImage));
-//		selectedImage.setThumbnail(new Thumbnail(folderImage));
-		folders=loadPage();
-		return;
+		refreshPage();
 	}
 
 	public List<Folder> loadPage(){
@@ -160,35 +151,44 @@ public class IndexVM {
 		return result;
 	}
 
+	/**
+	 * Recounts the folders, keeps currentPage within range and reloads it.
+	 */
+	private void refreshPage(){
+		numberOfPages = (long)Math.ceil((double)folderService.countFolders()/(double)pageSize);
+		if(currentPage > 0 && currentPage >= numberOfPages){
+			currentPage = (int) Math.max(numberOfPages - 1, 0);
+		}
+		previousButtonVisible = currentPage > 0;
+		nextButtonVisible = currentPage < numberOfPages - 1;
+		folders = loadPage();
+	}
+
 	@Command
 	@NotifyChange({"previousButtonVisible","nextButtonVisible","folders"})
 	public void previous(){
 		currentPage--;
-		nextButtonVisible = true;
-		numberOfPages = (long)Math.ceil((double)folderService.countFolders()/(double)pageSize);
-		if(currentPage == 0){
-			previousButtonVisible = false;
-		}
-		folders = loadPage();
+		refreshPage();
 	}
 
 
 	@Command
 	@NotifyChange({"previousButtonVisible","nextButtonVisible","folders"})
 	public void next(){
-		previousButtonVisible = true;
 		currentPage++;
-		numberOfPages = (long)Math.ceil((double)folderService.countFolders()/(double)pageSize);
-		folders = loadPage();
-		if(currentPage >= numberOfPages-1){
-			nextButtonVisible = false;
-		}
+		refreshPage();
 	}
 
 	@GlobalCommand
 	@NotifyChange({"selectedImage","currentPageName"})
 	public  void selectImage(@BindingParam("image")ImageDetails image, @BindingParam("pageName") String pageName){
-		selectedImage = imageService.getImageDetailsInitialized(image.getId());
+		ImageDetails imageFromDB = imageService.getImageDetailsInitialized(image.getId());
+		if (imageFromDB == null) {
+			Messagebox.show("This picture no longer exists.", "Picture not found",
+					Messagebox.OK, Messagebox.EXCLAMATION);
+			return;
+		}
+		selectedImage = imageFromDB;
 		currentPageName = pageName;
 	}
 
@@ -205,10 +205,10 @@ public class IndexVM {
 	}
 
 	@Command
-	@NotifyChange("folders")
+	@NotifyChange({"previousButtonVisible","nextButtonVisible","folders"})
 	public void deleteFolder(){
 		if (folderService.deleteFolder(folderToDelete)) {
-			folders.remove(folderToDelete);
+			refreshPage();
 		} else {
 			Messagebox.show("Folder \"" + folderToDelete.getFolderName()
 					+ "\" is not empty. Delete its pictures first.", "Cannot delete folder",

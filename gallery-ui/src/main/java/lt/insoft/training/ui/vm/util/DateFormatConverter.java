@@ -16,7 +16,7 @@ import org.zkoss.zk.ui.Component;
 
 public class DateFormatConverter implements Converter {
 
-    private Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
+    private Log logger = LogFactory.getLog(DateFormatConverter.class);
 
     @Override
     public Object coerceToUi(Object val, Component comp, BindContext ctx) {

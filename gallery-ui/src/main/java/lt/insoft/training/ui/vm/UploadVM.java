@@ -3,7 +3,6 @@ package lt.insoft.training.ui.vm;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.model.*;
 import lt.insoft.training.ui.vm.util.ImageScaler;
-import lt.insoft.training.ui.vm.util.ImageToZkImageConverter;
 import lt.insoft.training.ui.vm.validators.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -32,9 +31,12 @@ public class UploadVM {
     @WireVariable
     private ImageService imageService;
 
-    Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
+    Log logger = LogFactory.getLog(UploadVM.class);
 
     private byte[] uploadedPicture;
+
+    // scaled once on upload; the getter is called on every render
+    private byte[] uploadedPicturePreview;
 
     private String description;
 
@@ -114,8 +116,7 @@ public class UploadVM {
         if (uploadedPicture == null) {
             return placeholderImage;
         }
-        //byte[] picuture = ImageScaler.scaleImage(uploadedPicture,thumbnailMarginLength);
-        return ImageScaler.scaleImage(uploadedPicture, thumbnailMarginLength, 0);
+        return uploadedPicturePreview;
     }
 
     public void setUploadedPicture(byte[] uploadedPicture) {
@@ -200,19 +201,12 @@ public class UploadVM {
     @Command
     @NotifyChange({"uploadedPicture", "quality", "imageVisible", "insertDate", "imageValidationMessage"})
     public void doUploadedPicture(@BindingParam("media") Media uploadedPicture) {
-        //uploadedPicture.
-        if (uploadedPicture == null) {
-            imageValidationMessage = "Please upload a picture";
-        }
-        if (uploadedPicture instanceof org.zkoss.image.Image) {
-            try {
-                File temp = File.createTempFile("temp-file-name", ".tmp");
-                //.
-                //((Image)uploadedPicture).
-            } catch (IOException e) {
-                logger.error("Failed to create temp file");
-            }
+        byte[] preview = uploadedPicture instanceof org.zkoss.image.Image
+                ? ImageScaler.scaleImage(uploadedPicture.getByteData(), thumbnailMarginLength, 0)
+                : null;
+        if (preview != null) {
             this.uploadedPicture = uploadedPicture.getByteData();
+            this.uploadedPicturePreview = preview;
             AImage im = (AImage) uploadedPicture;
             quality = Integer.toString(im.getHeight()) + 'x' + Integer.toString(im.getWidth());
             Date date = new Date();
@@ -220,7 +214,10 @@ public class UploadVM {
             insertDate = date;
             imageValidationMessage = "";
         } else {
+            // not an image, or a format Java can't read (ImageScaler returns null)
             this.uploadedPicture = null;
+            this.uploadedPicturePreview = null;
+            imageVisible = false;
             imageValidationMessage = "Please upload a picture";
         }
     }
@@ -241,11 +238,13 @@ public class UploadVM {
         imageDetails.setImageName(imageName);
         imageDetails.setInsertDate(insertDate);
         imageDetails.setQuality(quality);
-        if (!tags.isEmpty()) {
-            String[] temTags = tags.split(",");
-            imageDetails.setTags(Arrays.asList(temTags));
+        if (tags != null && !tags.isEmpty()) {
+            imageDetails.setTags(new ArrayList<>(Arrays.asList(tags.split(","))));
         }
-        imageService.add(imageDetails);
+        if (!imageService.add(imageDetails)) {
+            imageValidationMessage = "The picture could not be saved";
+            return;
+        }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("folder", selectedFolder);
         map.put("page", "folder.zul");

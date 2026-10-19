@@ -41,7 +41,7 @@
                                             onClick="@global-command('selectImage', image=x,
                                                     pageName='editImage.zul')"/>
                                 <zul:separator/>
-                                <zul:image content="@load(x.thumbnail.thumbnail)
+                                <zul:image content="@load(x.thumbnail.image)
                                                @converter('lt.insoft.training.ui.vm.util.ImageToZkImageConverter')"
                                            sclass=" img-responsive"
                                            onClick="@global-command('selectImage',image=x, pageName='image.zul')"/>

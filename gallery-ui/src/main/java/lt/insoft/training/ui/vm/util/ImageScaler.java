@@ -19,11 +19,19 @@ public class ImageScaler {
 
     public static byte[] scaleImage(byte[] image, int marginLength, int addedPaddingToBottomOfImage) {
 
-        Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
+        Log logger = LogFactory.getLog(ImageScaler.class);
 
+        if (image == null) {
+            logger.error("Error occured, image==null");
+            throw new IllegalArgumentException("image is null");
+        }
         try (InputStream in = new ByteArrayInputStream(image); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             if (image != null) {
                 BufferedImage bImage = ImageIO.read(in);
+                if (bImage == null) {
+                    logger.warn("Unsupported image format, cannot scale");
+                    return null;
+                }
                 int whiteSpace = 300;
                 BufferedImage thumbnail;
                 if (bImage.getWidth() >= bImage.getHeight()) {

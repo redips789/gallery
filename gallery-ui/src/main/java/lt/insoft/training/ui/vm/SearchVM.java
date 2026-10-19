@@ -8,6 +8,7 @@ import org.zkoss.bind.annotation.*;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.event.PagingEvent;
 
 import java.util.*;
@@ -26,7 +27,8 @@ public class SearchVM {
 
     private ImageDetails selectedImage;
 
-    Set<ImageDetails> searchResults = new HashSet<ImageDetails>();
+    // LinkedHashSet keeps the order the repository returned
+    Set<ImageDetails> searchResults = new LinkedHashSet<ImageDetails>();
 
     private SearchValidator searchValidator = new SearchValidator();
 
@@ -77,13 +79,12 @@ public class SearchVM {
     @Command
     @NotifyChange("searchResults")
     public void search() {
-        if (searchInput.isEmpty()) {
+        if (searchInput == null || searchInput.isEmpty()) {
             return;
         }
         searchResults.clear();
-        long imageCount = imageService.countImagesBySearchCriteria(searchInput);
-        searchResults.addAll(imageService.selectImagesBySearchCriteria(searchInput, 0, 10));                      //taisyti
-        int a = 1;
+        // TODO: only the first 10 results are shown until the paging components on search.zul are wired up
+        searchResults.addAll(imageService.selectImagesBySearchCriteria(searchInput, 0, 10));
 //        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 //        Date searchInsertDate;
 //        try{
@@ -104,14 +105,22 @@ public class SearchVM {
     @Command
     @NotifyChange({"selectedImage"})
     public void selectImage(@BindingParam("image") ImageDetails image) {
-        selectedImage = imageService.getImageDetailsInitialized(image.getId());
+        selectedImage = image;
     }
 
     @Command
     @NotifyChange("searchResults")
     public void deleteImage() {
-        imageService.deleteImage(selectedImage);
+        if (selectedImage == null) {
+            return;
+        }
+        if (!imageService.deleteImage(selectedImage)) {
+            Messagebox.show("This picture no longer exists.", "Picture not found",
+                    Messagebox.OK, Messagebox.EXCLAMATION);
+        }
+        // remove it either way: it is gone from the database
         searchResults.remove(selectedImage);
+        selectedImage = null;
     }
 
     @Command

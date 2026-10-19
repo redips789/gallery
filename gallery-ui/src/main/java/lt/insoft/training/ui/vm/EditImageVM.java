@@ -12,6 +12,7 @@ import org.zkoss.zk.ui.event.EventQueues;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
+import org.zkoss.zul.Messagebox;
 
 import java.util.*;
 
@@ -78,27 +79,20 @@ public class EditImageVM {
     @Init
     public void init(@ExecutionArgParam("image") ImageDetails imageDetails) {
         selectedImage = imageDetails;
-        tags = String.join(",", imageDetails.getTags());
-        if(tags.equals("null")){
-            tags="";
-        }
-    }
-
-    @Command
-    @NotifyChange({"imageDetails"})
-    public void deleteImage(@BindingParam("image")ImageDetails imageDetails){
-        imageService.deleteImage(imageDetails);
-
+        tags = imageDetails.getTags() == null ? "" : String.join(",", imageDetails.getTags());
     }
 
     @Command
     public void submit(){
         List<String> tagsAfterEdit = new ArrayList<String>();
-        if(!tags.isEmpty()) {
+        if(tags != null && !tags.isEmpty()) {
             tagsAfterEdit.addAll(Arrays.asList(tags.split(",")));
         }
         selectedImage.setTags(tagsAfterEdit);
-        imageService.updateImage(selectedImage);
+        if (!imageService.updateImage(selectedImage)) {
+            Messagebox.show("This picture no longer exists.", "Picture not found",
+                    Messagebox.OK, Messagebox.EXCLAMATION);
+        }
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("folder",selectedImage.getFolder());
         map.put("page","folder.zul");
