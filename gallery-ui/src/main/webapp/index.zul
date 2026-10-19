@@ -1,6 +1,6 @@
-<?link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" ?>
-<?script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"?>
-<?script src="js/test.js"?>
+<?link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"?>
+<?script src="js/bootstrap.min.js"?>
+<?script src="js/error-dialog.js"?>
 <?link rel="stylesheet" type="text/css"  href="css/custom.css"?>
 <zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
     <x:div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm')@init('lt.insoft.training.ui.vm.IndexVM')">
@@ -42,7 +42,7 @@
                         <h4>Error</h4>
                     </div>
                     <div class="modal-body">
-                        <label id="errorMessage" value=""/>
+                        <p id="errorMessage"></p>
                     </div>
                     <div class="modal-footer">
                         <div class="col-xs-2">

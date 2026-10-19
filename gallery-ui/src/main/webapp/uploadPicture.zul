@@ -11,9 +11,6 @@
             <div class="col-lg-4 col-md-offset-4 col-md-4 col-xs-12">
                 <x:form>
                     <div class="form-group">
-                        <zul:label id="m1" value="@bind(vmsgs[ImageName])"/>
-                    </div>
-                    <div class="form-group">
                         <label>Picture<span class="redLabel">*</span>:
                         </label>
                         <div class="thumbnail">

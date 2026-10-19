@@ -12,8 +12,6 @@ import org.zkoss.bind.Converter;
 import org.zkoss.image.AImage;
 import org.zkoss.zul.Image;
 
-import javax.swing.*;
-
 public class ImageToZkImageConverter implements Converter<AImage, byte[], Image> {
 
     private Log logger = LogFactory.getLog(ImageToZkImageConverter.class);
@@ -29,7 +27,6 @@ public class ImageToZkImageConverter implements Converter<AImage, byte[], Image>
         try {
             if (beanProp != null && beanProp.length > 0) {
                 AImage im = new AImage("", beanProp);
-                component.setContent(im);
                 return im;
             }
             logger.debug("Return null => image is empty");

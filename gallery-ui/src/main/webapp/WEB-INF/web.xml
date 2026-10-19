@@ -156,55 +156,7 @@
 		<session-timeout>60</session-timeout>
 	</session-config>
 
-	<!-- [Optional] MIME mapping -->
-	<mime-mapping>
-		<extension>doc</extension>
-		<mime-type>application/vnd.ms-word</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>gif</extension>
-		<mime-type>imageDetails/gif</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>htm</extension>
-		<mime-type>text/html</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>html</extension>
-		<mime-type>text/html</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>jpeg</extension>
-		<mime-type>imageDetails/jpeg</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>jpg</extension>
-		<mime-type>imageDetails/jpeg</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>js</extension>
-		<mime-type>text/javascript</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>pdf</extension>
-		<mime-type>application/pdf</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>png</extension>
-		<mime-type>imageDetails/png</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>txt</extension>
-		<mime-type>text/plain</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>xls</extension>
-		<mime-type>application/vnd.ms-excel</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>xml</extension>
-		<mime-type>text/xml</mime-type>
-	</mime-mapping>
+	<!-- ZK page types; standard file types come from the servlet container -->
 	<mime-mapping>
 		<extension>zhtml</extension>
 		<mime-type>text/html</mime-type>

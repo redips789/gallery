@@ -23,11 +23,11 @@
                     <div class="form-group col-xs-12">
                         <label>Name<span class="redLabel">*</span>:
                         </label>
-                        <zul:textbox value="@bind(vm.selectedFolder.folderName) @validator(vm.nameValidator)
-                                            @save(vm.folderName, before='addFolder')"
+                        <zul:textbox value="@load(vm.folderName) @save(vm.folderName, before={'addFolder','editFolder'})
+                                            @validator(vm.nameValidator)"
                                  tabindex="1" sclass="form-control" id="folderName" placeholder="Folder name"/>
                         <zul:label value="@load(vmsgs[folderName])" sclass="redLabel"/>
-                        <zul:label value="@load(vm.nameAlreadyExists)" sclass="redLabel"/>
+                        <zul:label value="@load(vm.folderError)" sclass="redLabel"/>
                     </div>
                     <div class="form-group col-xs-12">
                         <zul:button label="Add" onClick="@command('addFolder')" sclass="btn btn-default" zclass="none"

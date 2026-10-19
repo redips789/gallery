@@ -3,6 +3,7 @@ package lt.insoft.training.ui.vm;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.model.*;
 import lt.insoft.training.ui.vm.util.ImageScaler;
+import lt.insoft.training.ui.vm.util.Tags;
 import lt.insoft.training.ui.vm.validators.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -60,10 +61,6 @@ public class UploadVM {
     private ImageDescriptionValidator imageDescriptionValidator = new ImageDescriptionValidator();
 
     private ImageTagsValidator imageTagsValidator = new ImageTagsValidator();
-
-    private ImageInsertDateValidator imageInsertDateValidator = new ImageInsertDateValidator();
-
-    private ImageValidator imageValidator = new ImageValidator();
 
     private final int thumbnailMarginLength = 370;
 
@@ -152,14 +149,6 @@ public class UploadVM {
         return imageTagsValidator;
     }
 
-    public ImageInsertDateValidator getImageInsertDateValidator() {
-        return imageInsertDateValidator;
-    }
-
-    public ImageValidator getImageValidator() {
-        return imageValidator;
-    }
-
     public String getImageValidationMessage() {
         return imageValidationMessage;
     }
@@ -238,9 +227,7 @@ public class UploadVM {
         imageDetails.setImageName(imageName);
         imageDetails.setInsertDate(insertDate);
         imageDetails.setQuality(quality);
-        if (tags != null && !tags.isEmpty()) {
-            imageDetails.setTags(new ArrayList<>(Arrays.asList(tags.split(","))));
-        }
+        imageDetails.setTags(Tags.parse(tags));
         if (!imageService.add(imageDetails)) {
             imageValidationMessage = "The picture could not be saved";
             return;

@@ -58,7 +58,7 @@ public class FolderVM{
 
     private boolean editFolder;
 
-    private String nameAlreadyExists;
+    private String folderError;
 
     private int from = 0;
 
@@ -176,12 +176,12 @@ public class FolderVM{
         this.editFolder = editPage;
     }
 
-    public String getNameAlreadyExists() {
-        return nameAlreadyExists;
+    public String getFolderError() {
+        return folderError;
     }
 
-    public void setNameAlreadyExists(String nameAlreadyExists) {
-        this.nameAlreadyExists = nameAlreadyExists;
+    public void setFolderError(String folderError) {
+        this.folderError = folderError;
     }
 
     public String getImageCountMessage() {
@@ -239,6 +239,7 @@ public class FolderVM{
         currentPage = 0;
         pageSize=8;
         if(selectedFolder != null) {
+            folderName = selectedFolder.getFolderName();
             refreshPage();
             editFolder = true;
         } else{
@@ -286,31 +287,39 @@ public class FolderVM{
     }
 
     @Command
-    @NotifyChange("nameAlreadyExists")
+    @NotifyChange("folderError")
     public  void addFolder(){
+        selectedFolder.setFolderName(folderName.trim());
         selectedFolder.setInsertDate(LocalDateTime.now());
         if(folderService.addFolder(selectedFolder)) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("folder", selectedFolder);
-            map.put("page", "folder.zul");
-            BindUtils.postGlobalCommand(null, EventQueues.DESKTOP, "selectFolder", map);
+            showFolder();
         }
         else{
-            nameAlreadyExists = "Folder with the same name already exists";
+            folderError = "Folder with the same name already exists";
         }
     }
 
     @Command
-    @NotifyChange("nameAlreadyExists")
+    @NotifyChange("folderError")
     public  void editFolder(){
+        // selectedFolder is the same object the folder list shows, so it only keeps the new name if the rename succeeds
+        String savedName = selectedFolder.getFolderName();
+        selectedFolder.setFolderName(folderName.trim());
         if(folderService.updateFolder(selectedFolder)) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("folder", selectedFolder);
-            map.put("page", "folder.zul");
-            BindUtils.postGlobalCommand(null, EventQueues.DESKTOP, "selectFolder", map);
+            showFolder();
         } else {
-            nameAlreadyExists = "Folder with the same name already exists";
+            selectedFolder.setFolderName(savedName);
+            folderError = folderService.selectFolderById(selectedFolder.getId()) == null
+                    ? "This folder no longer exists"
+                    : "Folder with the same name already exists";
         }
+    }
+
+    private void showFolder() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("folder", selectedFolder);
+        map.put("page", "folder.zul");
+        BindUtils.postGlobalCommand(null, EventQueues.DESKTOP, "selectFolder", map);
     }
 
     @Command

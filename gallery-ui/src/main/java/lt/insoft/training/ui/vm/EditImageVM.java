@@ -1,13 +1,14 @@
 package lt.insoft.training.ui.vm;
 
-import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.model.ImageDetails;
+import lt.insoft.training.ui.vm.util.Tags;
 import lt.insoft.training.ui.vm.validators.ImageDescriptionValidator;
 import lt.insoft.training.ui.vm.validators.NameValidator;
 import lt.insoft.training.ui.vm.validators.ImageTagsValidator;
 import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.*;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.EventQueues;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
@@ -78,17 +79,18 @@ public class EditImageVM {
 
     @Init
     public void init(@ExecutionArgParam("image") ImageDetails imageDetails) {
+        if (imageDetails == null) {
+            // the page was opened directly instead of from a folder
+            Executions.sendRedirect("index.zul");
+            return;
+        }
         selectedImage = imageDetails;
-        tags = imageDetails.getTags() == null ? "" : String.join(",", imageDetails.getTags());
+        tags = Tags.join(imageDetails.getTags());
     }
 
     @Command
     public void submit(){
-        List<String> tagsAfterEdit = new ArrayList<String>();
-        if(tags != null && !tags.isEmpty()) {
-            tagsAfterEdit.addAll(Arrays.asList(tags.split(",")));
-        }
-        selectedImage.setTags(tagsAfterEdit);
+        selectedImage.setTags(Tags.parse(tags));
         if (!imageService.updateImage(selectedImage)) {
             Messagebox.show("This picture no longer exists.", "Picture not found",
                     Messagebox.OK, Messagebox.EXCLAMATION);
