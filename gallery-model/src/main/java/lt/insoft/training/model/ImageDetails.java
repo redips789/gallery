@@ -2,7 +2,7 @@ package lt.insoft.training.model;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.lang.Math.toIntExact;
@@ -19,9 +19,8 @@ public class ImageDetails {
     @Column(name="ID")
     private Long id;
 
-    @Temporal(TemporalType.DATE)
     @Column(name="INSERT_DATE")
-    private Date insertDate;
+    private LocalDateTime insertDate;
 
     @Column(name="DESCRIPTION")
     private String description;
@@ -53,7 +52,7 @@ public class ImageDetails {
     @JoinColumn(name = "MODAL_IMAGEID")
     private Image modalImage;
 
-    public ImageDetails(Date date, String description, String quality, String name, Image image, Image thumbnail
+    public ImageDetails(LocalDateTime date, String description, String quality, String name, Image image, Image thumbnail
             , Folder folder, List<String> tags, Image modalImage) {
         this.insertDate = date;
         this.description = description;
@@ -76,11 +75,11 @@ public class ImageDetails {
         this.id = id;
     }
 
-    public Date getInsertDate() {
+    public LocalDateTime getInsertDate() {
         return insertDate;
     }
 
-    public void setInsertDate(Date date) {
+    public void setInsertDate(LocalDateTime date) {
         this.insertDate = date;
     }
 

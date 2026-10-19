@@ -1,5 +1,6 @@
 package lt.insoft.training.test;
 
+import java.time.LocalDateTime;
 import lt.insoft.training.bl.Repository.FolderRepository;
 import lt.insoft.training.bl.Repository.ImageRepository;
 import lt.insoft.training.model.*;
@@ -27,16 +28,16 @@ public class TestImageRepository {
     @Autowired
     private FolderRepository folderRepository;
 
-    private Calendar cal = new GregorianCalendar(2017, 03, 06);
+    // has a time of day, so searching by date must match the whole day
+    private LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
     private String folderName = "test";
-    private Folder folder = new Folder(folderName, cal.getTime());
+    private Folder folder = new Folder(folderName, insertDate);
     private String imageName = "imageName";
     private String tagName = "tagName";
     private String quality = "Quality";
     private String description = "testDescription";
 
-    private String dateToSting = cal.get(Calendar.YEAR)
-            + "-" + (cal.get(Calendar.MONTH) + 1) + "-" + cal.get(Calendar.DAY_OF_MONTH);
+    private String dateToSting = insertDate.toLocalDate().toString();
     private ImageDetails imageDetails = getImageInitialized();
 
     @Test
@@ -284,11 +285,11 @@ public class TestImageRepository {
     public ImageDetails getImageInitialized() {
         ImageDetails imageDetails = new ImageDetails();
         imageDetails.setModalImage(new Image());
-//        imageDetails.setFolder(new Folder(folderName,cal.getTime()));
+//        imageDetails.setFolder(new Folder(folderName,insertDate));
         imageDetails.setDescription(description);
         imageDetails.setImage(new Image());
         imageDetails.setImageName("imageName");
-        imageDetails.setInsertDate(cal.getTime());
+        imageDetails.setInsertDate(insertDate);
         imageDetails.setQuality(quality);
         imageDetails.setTags(new ArrayList<>(Collections.singletonList(tagName)));
 

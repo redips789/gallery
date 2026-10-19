@@ -1,11 +1,9 @@
 package lt.insoft.training.bl.Service;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.Date;
 
 /**
  * Created by povilas.jegelevicius on 2017-03-30.
@@ -26,12 +24,11 @@ public class UtilityService {
     }
 
     /**
-     * @return the date at the start of that day, or null if the input is not exactly a yyyy-MM-dd date
+     * @return the parsed date, or null if the input is not exactly a yyyy-MM-dd date
      */
-    public Date parseDateService(String date) {
+    public LocalDate parseDateService(String date) {
         try {
-            LocalDate parsedDate = LocalDate.parse(date.trim(), DATE_FORMAT);
-            return Date.from(parsedDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            return LocalDate.parse(date.trim(), DATE_FORMAT);
         } catch (DateTimeParseException e) {
             return null;
         }

@@ -1,5 +1,6 @@
 package lt.insoft.training.test;
 
+import java.time.LocalDateTime;
 import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.bl.Service.UserService;
 import lt.insoft.training.bl.Service.UtilityService;
@@ -15,8 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 @ContextConfiguration(classes = TestConfiguration.class)
 @ExtendWith(SpringExtension.class)
@@ -31,13 +30,14 @@ public class TestServices {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    private Calendar cal = new GregorianCalendar(2017, 03, 06);
+    // has a time of day, so searching by date must match the whole day
+    private LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
 
     @Test
     @Transactional
     @Rollback
     public void testUpdateFolderKeepingSameName() {
-        Folder folder = new Folder("test", cal.getTime());
+        Folder folder = new Folder("test", insertDate);
         folderService.addFolder(folder);
         Assertions.assertTrue(folderService.updateFolder(folder));
     }
@@ -46,8 +46,8 @@ public class TestServices {
     @Transactional
     @Rollback
     public void testAddFolderWithSameName() {
-        Assertions.assertTrue(folderService.addFolder(new Folder("test", cal.getTime())));
-        Assertions.assertFalse(folderService.addFolder(new Folder("test", cal.getTime())));
+        Assertions.assertTrue(folderService.addFolder(new Folder("test", insertDate)));
+        Assertions.assertFalse(folderService.addFolder(new Folder("test", insertDate)));
     }
 
     @Test

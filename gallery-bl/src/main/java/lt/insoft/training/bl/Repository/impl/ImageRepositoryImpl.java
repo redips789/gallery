@@ -14,8 +14,9 @@ import jakarta.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -199,10 +200,13 @@ public class ImageRepositoryImpl implements ImageRepository {
         List<Predicate> predicates = new ArrayList<Predicate>();
         predicates.add(qb.equal(qb.upper(imageDetails.get(ImageDetails_.imageName)), searchQuery.toUpperCase()));
         predicates.add(qb.equal(qb.upper(imageDetails.get(ImageDetails_.quality)), searchQuery.toUpperCase()));
-        Date parsedDate = utilityService.parseDateService(searchQuery);
-        //parsedDate != null ? predicates.add(qb.equal((imageDetails.get(ImageDetails_.insertDate))),parsedDate) : ;
+        LocalDate parsedDate = utilityService.parseDateService(searchQuery);
         if (parsedDate != null) {
-            predicates.add(qb.equal(imageDetails.get(ImageDetails_.insertDate), parsedDate));
+            // insertDate has a time of day, so match anything within that day
+            Path<LocalDateTime> insertDate = imageDetails.get(ImageDetails_.insertDate);
+            predicates.add(qb.and(
+                    qb.greaterThanOrEqualTo(insertDate, parsedDate.atStartOfDay()),
+                    qb.lessThan(insertDate, parsedDate.plusDays(1).atStartOfDay())));
         }
         String searchQueryWithEscapedCharacters = utilityService.escapeSpecialCharacters(searchQuery);
         predicates.add(qb.like(qb.upper(imageDetails.get(ImageDetails_.description)), "%" + searchQueryWithEscapedCharacters.toUpperCase() + "%", '!'));

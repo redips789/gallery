@@ -19,6 +19,7 @@ import org.zkoss.zkplus.spring.DelegatingVariableResolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -42,7 +43,7 @@ public class UploadVM {
 
     private String quality;
 
-    private Date insertDate;
+    private LocalDateTime insertDate;
 
     private Folder selectedFolder;
 
@@ -96,11 +97,11 @@ public class UploadVM {
         this.quality = quality;
     }
 
-    public Date getInsertDate() {
+    public LocalDateTime getInsertDate() {
         return insertDate;
     }
 
-    public void setInsertDate(Date insertDate) {
+    public void setInsertDate(LocalDateTime insertDate) {
         this.insertDate = insertDate;
     }
 
@@ -209,9 +210,8 @@ public class UploadVM {
             this.uploadedPicturePreview = preview;
             AImage im = (AImage) uploadedPicture;
             quality = Integer.toString(im.getHeight()) + 'x' + Integer.toString(im.getWidth());
-            Date date = new Date();
+            insertDate = LocalDateTime.now();
             imageVisible = true;
-            insertDate = date;
             imageValidationMessage = "";
         } else {
             // not an image, or a format Java can't read (ImageScaler returns null)

@@ -18,6 +18,7 @@ import org.zkoss.zul.Messagebox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -287,7 +288,7 @@ public class FolderVM{
     @Command
     @NotifyChange("nameAlreadyExists")
     public  void addFolder(){
-        selectedFolder.setInsertDate(new Date());
+        selectedFolder.setInsertDate(LocalDateTime.now());
         if(folderService.addFolder(selectedFolder)) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("folder", selectedFolder);

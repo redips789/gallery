@@ -1,7 +1,7 @@
 package lt.insoft.training.model;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,14 +20,13 @@ public class Folder {
     @Column(name="NAME")
     private String folderName;
 
-    @Temporal(TemporalType.DATE)
     @Column(name="INSERT_DATE")
-    private Date insertDate;
+    private LocalDateTime insertDate;
 
     public Folder() {
     }
 
-    public Folder (String folderName, Date insertDate){
+    public Folder (String folderName, LocalDateTime insertDate){
         this.folderName = folderName;
         this.insertDate = insertDate;
     }
@@ -44,11 +43,11 @@ public class Folder {
         this.folderName = folderName;
     }
 
-    public Date getInsertDate() {
+    public LocalDateTime getInsertDate() {
         return insertDate;
     }
 
-    public void setInsertDate(Date insertDate) {
+    public void setInsertDate(LocalDateTime insertDate) {
         this.insertDate = insertDate;
     }
 

@@ -4,7 +4,6 @@ import lt.insoft.training.model.Folder;
 import lt.insoft.training.model.ImageDetails;
 
 import jakarta.persistence.TypedQuery;
-import java.util.Date;
 import java.util.List;
 
 /**

@@ -1,5 +1,6 @@
 package lt.insoft.training.test;
 
+import java.time.LocalDateTime;
 import lt.insoft.training.bl.Repository.FolderRepository;
 import lt.insoft.training.bl.Repository.ImageRepository;
 import lt.insoft.training.model.Folder;
@@ -7,9 +8,6 @@ import lt.insoft.training.model.ImageDetails;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -36,8 +34,9 @@ public class TestFolderRepository {
 
     private String folderName="test";
 
-    private Calendar cal = new GregorianCalendar(2017, 03, 06);
-    private Folder folder = new Folder(folderName, cal.getTime());
+    // has a time of day, so searching by date must match the whole day
+    private LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
+    private Folder folder = new Folder(folderName, insertDate);
 
     @Test
     @Transactional
@@ -67,7 +66,7 @@ public class TestFolderRepository {
     @Rollback
     public void testAddFolderAddFolderWithSameName() {
         Assertions.assertEquals(true, folderRepository.addFolder(folder));
-        folder = new Folder(folderName, cal.getTime());
+        folder = new Folder(folderName, insertDate);
         Assertions.assertEquals(false, folderRepository.addFolder(folder));
     }
 
