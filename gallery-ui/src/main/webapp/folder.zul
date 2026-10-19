@@ -1,4 +1,4 @@
-<zk xmlns="native" xmlns:ca="client/attribute" xmlns:x="xhtml" xmlns:zul="zul">
+<zk xmlns="native" xmlns:ca="client/attribute" xmlns:x="xhtml" xmlns:zul="zul" xmlns:zk="zk">
     <x:div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm')@init('lt.insoft.training.ui.vm.FolderVM')">
         <div class="container ">
             <div class="row top30 ">
@@ -33,7 +33,7 @@
             </div>
             <div class="row">
                 <zul:div children="@load(vm.imageDetails) @template('loadImages')">
-                    <zul:template name="loadImages" var="x">
+                    <zk:template name="loadImages" var="x">
                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <div class="thumbnail">
                                 <zul:button iconSclass="glyphicon glyphicon-trash"
@@ -53,7 +53,7 @@
                                        onClick="@global-command('selectImage',image=x, pageName='image.zul')"/>
                             </div>
                         </div>
-                    </zul:template>
+                    </zk:template>
                 </zul:div>
             </div>
             <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog"

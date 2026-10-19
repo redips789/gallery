@@ -1,4 +1,4 @@
-<zk xmlns:n="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul" xmlns:zk="zk">
     <x:div apply="org.zkoss.bind.BindComposer"
            viewModel="@id('vm')@init('lt.insoft.training.ui.vm.SearchVM')"
            validationMessages="@id('vmsgs')">
@@ -22,12 +22,15 @@
                         </div>
                     </div>
                     <zul:label value="@load(vmsgs[searchQuery])" sclass="redLabel"/>
+                    <div class="text-center">
+                        <zul:label value="@load(vm.resultsMessage)"/>
+                    </div>
                 </div>
             </div>
             <zul:separator/>
             <div class="row">
                 <zul:div children="@load(vm.searchResults) @template('loadImages')">
-                    <zul:template name="loadImages" var="x">
+                    <zk:template name="loadImages" var="x">
                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <div class="thumbnail">
                                 <zul:button iconSclass="glyphicon glyphicon-trash"
@@ -47,7 +50,7 @@
                                            onClick="@global-command('selectImage',image=x, pageName='image.zul')"/>
                             </div>
                         </div>
-                    </zul:template>
+                    </zk:template>
                 </zul:div>
             </div>
             <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog"
@@ -74,9 +77,12 @@
                     </div>
                 </div>
             </div>
-            <zul:myPaging id="myComp" totalSize="21" pageSize="5" activePage="@save(vm.activePage)"/>
-            <zul:paging id="paging" totalSize="21" pageSize="5" activePage="@save(vm.activePage)"
-                        zclass="none" sclass="pagination" mold="os"/>
+            <div class="row text-center">
+                <zul:paging id="paging" totalSize="@load(vm.totalResults)" pageSize="@load(vm.pageSize)"
+                            activePage="@load(vm.activePage)" autohide="true"
+                            onPaging="@command('changePage', page=event.activePage)"
+                            zclass="none" sclass="pagination" mold="os"/>
+            </div>
         </div>
     </x:div>
 </zk>

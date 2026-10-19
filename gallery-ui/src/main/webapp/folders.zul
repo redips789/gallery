@@ -1,4 +1,4 @@
-<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul" xmlns:zk="zk">
     <div class="container">
         <div class="row bottom5 top60">
             <div class="col-xs-12 text-center">
@@ -23,7 +23,7 @@
         </div>
         <div class="row">
             <x:div children="@load(vm.folders) @template('loadFolders')">
-                <zul:template name="loadFolders" var="x">
+                <zk:template name="loadFolders" var="x">
                     <zul:div sclass="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                         <div class="thumbnail">
                             <zul:button iconSclass="glyphicon glyphicon-trash" sclass="btn btn-sample
@@ -47,7 +47,7 @@
                         <!--ca:data-toggle="modal" ca:data-target="#confirm-delete"-->
                         <!--onClick="@command('selectFolderToDelete', folder=x)"/>-->
                     </zul:div>
-                </zul:template>
+                </zk:template>
             </x:div>
         </div>
         <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog"

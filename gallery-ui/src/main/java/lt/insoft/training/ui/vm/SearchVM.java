@@ -1,6 +1,5 @@
 package lt.insoft.training.ui.vm;
 
-import lt.insoft.training.bl.Service.FolderService;
 import lt.insoft.training.bl.Service.ImageService;
 import lt.insoft.training.model.ImageDetails;
 import lt.insoft.training.ui.vm.validators.SearchValidator;
@@ -9,7 +8,6 @@ import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.event.PagingEvent;
 
 import java.util.*;
 
@@ -19,29 +17,31 @@ import java.util.*;
 @VariableResolver({DelegatingVariableResolver.class})
 public class SearchVM {
 
+    private static final int PAGE_SIZE = 8;
+
     @WireVariable
     private ImageService imageService;
 
-    @WireVariable
-    private FolderService folderService;
-
     private ImageDetails selectedImage;
 
-    // LinkedHashSet keeps the order the repository returned
-    Set<ImageDetails> searchResults = new LinkedHashSet<ImageDetails>();
+    private List<ImageDetails> searchResults = new ArrayList<ImageDetails>();
 
     private SearchValidator searchValidator = new SearchValidator();
 
+    // bound to the textbox, so it changes while typing
     private String searchInput;
+
+    // the query the current results belong to; paging keeps using it until the next search
+    private String currentQuery;
 
     private int activePage = 0;
 
-    public Set<ImageDetails> getSearchResults() {
-        return searchResults;
-    }
+    private int totalResults = 0;
 
-    public void setSearchResults(Set<ImageDetails> searchResults) {
-        this.searchResults = searchResults;
+    private String resultsMessage;
+
+    public List<ImageDetails> getSearchResults() {
+        return searchResults;
     }
 
     public String getSearchInput() {
@@ -56,10 +56,6 @@ public class SearchVM {
         return searchValidator;
     }
 
-    public void setSearchValidator(SearchValidator searchValidator) {
-        this.searchValidator = searchValidator;
-    }
-
     public ImageDetails getSelectedImage() {
         return selectedImage;
     }
@@ -72,34 +68,34 @@ public class SearchVM {
         return activePage;
     }
 
-    public void setActivePage(int activePage) {
-        this.activePage = activePage;
+    public int getTotalResults() {
+        return totalResults;
+    }
+
+    public int getPageSize() {
+        return PAGE_SIZE;
+    }
+
+    public String getResultsMessage() {
+        return resultsMessage;
     }
 
     @Command
-    @NotifyChange("searchResults")
+    @NotifyChange({"searchResults", "activePage", "totalResults", "resultsMessage"})
     public void search() {
         if (searchInput == null || searchInput.isEmpty()) {
             return;
         }
-        searchResults.clear();
-        // TODO: only the first 10 results are shown until the paging components on search.zul are wired up
-        searchResults.addAll(imageService.selectImagesBySearchCriteria(searchInput, 0, 10));
-//        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//        Date searchInsertDate;
-//        try{
-//            df.setLenient(false);
-//            searchInsertDate = df.parse(searchInput);
-//            searchResults.addAll(imageService.selectImagesByInsertDate(searchInsertDate,0,10));
-//        } catch (ParseException e){
-//            int a = 1;
-//        }
-//        searchResults.addAll(imageService.selectImagesByDescription(searchInput,0,10));
-//        searchResults.addAll(imageService.selectImagesByQuality(searchInput,0,10));
-//        //searchResults.addAll(imageService.selectImagesByName(searchInput,0,10));
-//        for (Tag item: tagService.selectTagsByName(searchInput,0,10)) {
-//            searchResults.add(item.getImageDetails());
-//        }
+        currentQuery = searchInput;
+        activePage = 0;
+        loadPage();
+    }
+
+    @Command
+    @NotifyChange({"searchResults", "activePage", "totalResults", "resultsMessage"})
+    public void changePage(@BindingParam("page") int page) {
+        activePage = page;
+        loadPage();
     }
 
     @Command
@@ -109,7 +105,7 @@ public class SearchVM {
     }
 
     @Command
-    @NotifyChange("searchResults")
+    @NotifyChange({"searchResults", "activePage", "totalResults", "resultsMessage"})
     public void deleteImage() {
         if (selectedImage == null) {
             return;
@@ -118,13 +114,26 @@ public class SearchVM {
             Messagebox.show("This picture no longer exists.", "Picture not found",
                     Messagebox.OK, Messagebox.EXCLAMATION);
         }
-        // remove it either way: it is gone from the database
-        searchResults.remove(selectedImage);
         selectedImage = null;
+        // reload either way: the next page's first result moves up into this one
+        loadPage();
     }
 
-    @Command
-    public void test (@ContextParam(ContextType.TRIGGER_EVENT) PagingEvent event) {
-        int activePage = 0;
+    /**
+     * Recounts the results for currentQuery, keeps activePage within range and loads that page.
+     */
+    private void loadPage() {
+        totalResults = Math.toIntExact(imageService.countImagesBySearchCriteria(currentQuery));
+        int pageCount = (totalResults + PAGE_SIZE - 1) / PAGE_SIZE;
+        if (activePage >= pageCount) {
+            activePage = Math.max(pageCount - 1, 0);
+        }
+        searchResults = imageService.selectImagesBySearchCriteria(currentQuery, activePage * PAGE_SIZE, PAGE_SIZE);
+        if (totalResults == 0) {
+            resultsMessage = "No pictures found";
+        } else {
+            int from = activePage * PAGE_SIZE + 1;
+            resultsMessage = from + "-" + (from + searchResults.size() - 1) + " of " + totalResults + " pictures";
+        }
     }
 }

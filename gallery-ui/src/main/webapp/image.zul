@@ -1,4 +1,4 @@
-<zk xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
+<zk xmlns="native" xmlns:x="xhtml" xmlns:ca="client/attribute" xmlns:zul="zul">
     <x:div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm')@init('lt.insoft.training.ui.vm.EditImageVM')">
         <div class="container ">
             <div class="row top30">
