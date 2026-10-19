@@ -1,6 +1,6 @@
 package lt.insoft.training.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by povilas.jegelevicius on 2017-03-01.
@@ -9,7 +9,8 @@ import javax.persistence.*;
 @Table(name="POV_IMAGE")
 public class Image {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernateSequence")
+    @SequenceGenerator(name = "hibernateSequence", sequenceName = "HIBERNATE_SEQUENCE", allocationSize = 1)
     @Column(name="ID")
     private Long id;
 

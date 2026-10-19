@@ -27,14 +27,14 @@
         <property name="jpaVendorAdapter">
             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
                 <property name="showSql" value="true"/>
-                <property name="databasePlatform" value="org.hibernate.dialect.Oracle10gDialect"/>
+                <property name="databasePlatform" value="org.hibernate.dialect.OracleDialect"/>
             </bean>
         </property>
     </bean>
 
     <!--<bean id="imageRepository" class="lt.insoft.training.bl.Repository.impl.ImageRepositoryImpl"/>-->
 
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
         <property name="url" value="jdbc:oracle:thin:@oracle.insoft.dev:1521:dev"></property>
         <property name="username" value="mokymai"></property>
@@ -43,6 +43,9 @@
 
     <bean id="myUserDetailsService" class="lt.insoft.training.bl.Repository.impl.UserDetailsRepositoryImpl">
     </bean>
+
+    <bean id="noOpPasswordEncoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
+          factory-method="getInstance"/>
 
     <b:beans xmlns="http://www.springframework.org/schema/security"
              xmlns:b="http://www.springframework.org/schema/beans"
@@ -80,7 +83,12 @@
         <!--</authentication-manager>-->
 
         <authentication-manager>
-            <authentication-provider user-service-ref='myUserDetailsService'/>
+            <!-- Passwords in POV_USER are stored as plain text. Spring Security 5+ rejects passwords
+                 without an encoder prefix, so plain-text comparison is configured explicitly.
+                 TODO: migrate stored passwords to BCrypt and switch to a BCryptPasswordEncoder. -->
+            <authentication-provider user-service-ref='myUserDetailsService'>
+                <password-encoder ref="noOpPasswordEncoder"/>
+            </authentication-provider>
             <!--<authentication-provider user-service-ref='org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl'/>-->
         </authentication-manager>
 

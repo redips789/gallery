@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
-import javax.persistence.criteria.*;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.toIntExact;
-import static lt.insoft.training.model.ImageDetails_.tags;
 
 /**
  * Created by povilas.jegelevicius on 2017-02-22.
@@ -84,7 +83,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ImageDetails> cq = cb.createQuery(ImageDetails.class);
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
-        cq.where(cb.equal(imageDetails.get(ImageDetails_.folder), folder.getId()));
+        cq.where(cb.equal(imageDetails.get(ImageDetails_.folder).get(Folder_.id), folder.getId()));
         cq.select(imageDetails);
         cq.orderBy(cb.asc(imageDetails.get(ImageDetails_.insertDate)));
         TypedQuery<ImageDetails> q = entityManager.createQuery(cq);
@@ -99,7 +98,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         CriteriaQuery<Long> cq = qb.createQuery(Long.class);
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
         cq.select(qb.count(imageDetails));
-        cq.where(qb.equal(imageDetails.get(ImageDetails_.folder), folder.getId()));
+        cq.where(qb.equal(imageDetails.get(ImageDetails_.folder).get(Folder_.id), folder.getId()));
         return entityManager.createQuery(cq).getSingleResult();
     }
 
@@ -175,9 +174,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         CriteriaBuilder qb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> cq = qb.createQuery(Long.class);
         Root<ImageDetails> imageDetails = cq.from(ImageDetails.class);
-//        Join<ImageDetails, Tag> tags = imageDetails.join(ImageDetails_.tags, JoinType.LEFT);
-        //imageDetails.get(ImageDetails_.)
-        //Join<ImageDetails, String> tags = imageDetails.join("tags", JoinType.LEFT);
+        Join<ImageDetails, String> tags = imageDetails.join("tags", JoinType.LEFT);
         List<Predicate> predicates = new ArrayList<Predicate>();
         predicates.addAll(buildSearchQueryPredicate(searchInput, qb, tags, imageDetails));
         cq.select(qb.countDistinct(imageDetails));

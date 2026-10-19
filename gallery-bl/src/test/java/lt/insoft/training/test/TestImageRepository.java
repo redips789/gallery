@@ -3,13 +3,13 @@ package lt.insoft.training.test;
 import lt.insoft.training.bl.Repository.FolderRepository;
 import lt.insoft.training.bl.Repository.ImageRepository;
 import lt.insoft.training.model.*;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -18,7 +18,7 @@ import java.util.*;
  * Created by povilas.jegelevicius on 2017-04-05.
  */
 @ContextConfiguration(classes = TestConfiguration.class)
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class TestImageRepository {
 
     @Autowired
@@ -45,7 +45,7 @@ public class TestImageRepository {
     public void testAddImage() {
         imageRepository.addImage(imageDetails);
         ImageDetails imageDetails1 = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
-        Assert.assertEquals(imageDetails1.getImageName(), imageName);
+        Assertions.assertEquals(imageDetails1.getImageName(), imageName);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class TestImageRepository {
         imageDetails.setFolder(folder);
         imageRepository.addImage(imageDetails);
         ImageDetails imageDetails1 = imageRepository.selectFolderImages(folder, 0, 1).get(0);
-        Assert.assertEquals(imageDetails1.getImageName(), imageName);
+        Assertions.assertEquals(imageDetails1.getImageName(), imageName);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class TestImageRepository {
         imageDetails.setImageName("testas atnaujintas");
         imageRepository.updateImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName("testas atnaujintas", 0, 1).get(0);
-        Assert.assertEquals("testas atnaujintas", imageDetails.getImageName());
+        Assertions.assertEquals("testas atnaujintas", imageDetails.getImageName());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class TestImageRepository {
         imageDetails.setImageName("testas atnaujintas");
         imageRepository.updateImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName("testas atnaujintas", 0, 1).get(0);
-        Assert.assertEquals("testas atnaujintas", imageDetails.getImageName());
+        Assertions.assertEquals("testas atnaujintas", imageDetails.getImageName());
     }
 
     @Test
@@ -91,9 +91,9 @@ public class TestImageRepository {
         //imageRepository.addImage(imageDetails);
         imageDetails.setImageName("testas atnaujintas");
         imageDetails.setId(1);
-        Assert.assertTrue(!imageRepository.updateImage(imageDetails));
+        Assertions.assertTrue(!imageRepository.updateImage(imageDetails));
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesByName("testas atnaujintas", 0, 1);
-        Assert.assertTrue(imageDetailsList.isEmpty());
+        Assertions.assertTrue(imageDetailsList.isEmpty());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class TestImageRepository {
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         imageRepository.deleteImage(imageDetails);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesByName(imageName, 0, 1);
-        Assert.assertTrue(imageDetailsList.isEmpty());
+        Assertions.assertTrue(imageDetailsList.isEmpty());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class TestImageRepository {
     public void testDeleteImageNoImage() {
         imageRepository.deleteImage(imageDetails);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesByName(imageName, 0, 1);
-        Assert.assertEquals(imageDetailsList.size(), 0);
+        Assertions.assertEquals(imageDetailsList.size(), 0);
     }
 
     @Test
@@ -123,7 +123,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         imageDetails = imageRepository.getImageDetailsInitialized(imageDetails.getId());
-        Assert.assertNotEquals(null, imageDetails.getImage().getId());
+        Assertions.assertNotEquals(null, imageDetails.getImage().getId());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class TestImageRepository {
         folder = folderRepository.selectFolderByName(folderName);
         imageDetails.setFolder(folder);
         imageRepository.addImage(imageDetails);
-        Assert.assertEquals(1, imageRepository.countImagesInFolder(folder));
+        Assertions.assertEquals(1, imageRepository.countImagesInFolder(folder));
     }
 
     @Test
@@ -143,7 +143,7 @@ public class TestImageRepository {
     public void testCountImagesBySearchCriteriaByName() {
         imageRepository.addImage(imageDetails);
         long count = imageRepository.countImagesBySearchCriteria(imageName);
-        Assert.assertEquals(1, count);
+        Assertions.assertEquals(1, count);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class TestImageRepository {
     public void testCountImagesBySearchCriteriaParseDate() {
         imageRepository.addImage(imageDetails);
         long count = imageRepository.countImagesBySearchCriteria(dateToSting);
-        Assert.assertEquals(1, count);
+        Assertions.assertEquals(1, count);
     }
 
     @Test
@@ -163,7 +163,7 @@ public class TestImageRepository {
         imageDetails.setId(imageRepository.selectImagesByName(imageName, 0, 1).get(0).getId());
         long count = imageRepository.countImagesBySearchCriteria(dateToSting);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesBySearchCriteria(imageName, 0, 1);
-        Assert.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
+        Assertions.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class TestImageRepository {
     public void testSelectImagesByName() {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
-        Assert.assertNotEquals(null, imageDetails);
+        Assertions.assertNotEquals(null, imageDetails);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesBySearchCriteria(imageName, 0, 1);
-        Assert.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
+        Assertions.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
     }
 
     @Test
@@ -192,7 +192,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesBySearchCriteria(tagName, 0, 1);
-        Assert.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
+        Assertions.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesBySearchCriteria(imageDetails.getDescription(), 0, 1);
-        Assert.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
+        Assertions.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
     }
 
     @Test
@@ -212,7 +212,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         List<ImageDetails> imageDetailsList = imageRepository.selectImagesBySearchCriteria(quality, 0, 1);
-        Assert.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
+        Assertions.assertEquals(imageDetails.getId(), imageDetailsList.get(0).getId());
     }
 
     @Test
@@ -222,7 +222,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         long count = imageRepository.countImagesBySearchCriteria(tagName);
-        Assert.assertEquals(1, count);
+        Assertions.assertEquals(1, count);
     }
 
     @Test
@@ -232,7 +232,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         long count = imageRepository.countImagesBySearchCriteria(imageDetails.getDescription());
-        Assert.assertEquals(1, count);
+        Assertions.assertEquals(1, count);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class TestImageRepository {
         imageRepository.addImage(imageDetails);
         imageDetails = imageRepository.selectImagesByName(imageName, 0, 1).get(0);
         long count = imageRepository.countImagesBySearchCriteria(quality);
-        Assert.assertEquals(1, count);
+        Assertions.assertEquals(1, count);
     }
 
     public ImageDetails getImageInitialized() {

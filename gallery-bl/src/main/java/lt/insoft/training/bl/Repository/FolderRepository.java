@@ -2,7 +2,7 @@ package lt.insoft.training.bl.Repository;
 
 import lt.insoft.training.model.Folder;
 
-import javax.persistence.TypedQuery;
+import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 /**

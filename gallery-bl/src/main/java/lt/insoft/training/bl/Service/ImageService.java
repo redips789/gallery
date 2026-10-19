@@ -1,6 +1,5 @@
 package lt.insoft.training.bl.Service;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import lt.insoft.training.model.Folder;
 import lt.insoft.training.model.ImageDetails;
 import lt.insoft.training.bl.Repository.ImageRepository;

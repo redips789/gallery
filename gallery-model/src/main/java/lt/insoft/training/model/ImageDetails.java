@@ -1,6 +1,6 @@
 package lt.insoft.training.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +14,8 @@ import static java.lang.Math.toIntExact;
 @Table (name="POV_IMAGE_DETAILS")
 public class ImageDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernateSequence")
+    @SequenceGenerator(name = "hibernateSequence", sequenceName = "HIBERNATE_SEQUENCE", allocationSize = 1)
     @Column(name="ID")
     private Long id;
 
