@@ -8,11 +8,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.util.*;
 
 /**
@@ -27,6 +30,9 @@ public class TestImageRepository {
 
     @Autowired
     private FolderRepository folderRepository;
+
+    @Autowired
+    private DataSource dataSource;
 
     // has a time of day, so searching by date must match the whole day
     private LocalDateTime insertDate = LocalDateTime.of(2017, 4, 6, 14, 30);
@@ -280,6 +286,51 @@ public class TestImageRepository {
     @Rollback
     public void testDeleteImageNotSaved() {
         Assertions.assertFalse(imageRepository.deleteImage(new ImageDetails()));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testAddImageWritesImmediately() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        String countSql = "SELECT COUNT(*) FROM POV_IMAGE_DETAILS WHERE IMAGE_NAME = ?";
+        Assertions.assertTrue(imageRepository.addImage(imageDetails));
+        Assertions.assertNotNull(imageDetails.getId());
+        // plain JDBC on the same transaction only sees the row if it was flushed
+        Assertions.assertEquals(1, jdbc.queryForObject(countSql, Integer.class, imageName));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testAddImageTwice() {
+        Assertions.assertTrue(imageRepository.addImage(imageDetails));
+        Assertions.assertFalse(imageRepository.addImage(imageDetails));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testAddImageToDetachedFolder() {
+        folderRepository.addFolder(folder);
+        // a separate copy with the same id, like the one the upload page holds
+        Folder detached = new Folder(folderName, insertDate);
+        ReflectionTestUtils.setField(detached, "id", folder.getId());
+        imageDetails.setFolder(detached);
+        Assertions.assertTrue(imageRepository.addImage(imageDetails));
+        Assertions.assertEquals(folder.getId(), imageDetails.getFolder().getId());
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    public void testAddImageToMissingFolder() {
+        Folder missing = new Folder(folderName, insertDate);
+        ReflectionTestUtils.setField(missing, "id", -1L);
+        imageDetails.setFolder(missing);
+        Assertions.assertFalse(imageRepository.addImage(imageDetails));
+        imageDetails.setFolder(new Folder(folderName, insertDate));
+        Assertions.assertFalse(imageRepository.addImage(imageDetails));
     }
 
     @Test

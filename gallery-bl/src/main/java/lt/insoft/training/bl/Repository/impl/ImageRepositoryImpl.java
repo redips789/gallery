@@ -36,12 +36,21 @@ public class ImageRepositoryImpl implements ImageRepository {
 
     @Override
     public boolean addImage(ImageDetails imageDetails) {
-        try {
-            entityManager.merge(imageDetails);
-            return true;
-        } catch (PersistenceException e) {
+        // checked up front: a failed flush would mark the whole transaction rollback-only
+        if (imageDetails.getId() != null) {
             return false;
         }
+        Folder folder = imageDetails.getFolder();
+        if (folder != null) {
+            Folder folderFromDB = folder.getId() == null ? null : entityManager.find(Folder.class, folder.getId());
+            if (folderFromDB == null) {
+                return false;
+            }
+            imageDetails.setFolder(folderFromDB);
+        }
+        entityManager.persist(imageDetails);
+        entityManager.flush();
+        return true;
     }
 
     @Override
